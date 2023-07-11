@@ -113,6 +113,7 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
     {
         "id": 100, 
         "row": "部屋名", 
+        "group": "ページ名",
         "start": "202307071100", 
         "end": "202307071200", 
         "others": {
@@ -146,6 +147,7 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
     type: "add", 
     eventId: 100,
     "row": "部屋名", 
+    "group": "ページ名",
     "start": "202307071100", 
     "end": "202307071200", 
     "others": {
