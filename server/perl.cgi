@@ -27,6 +27,8 @@ use JSON;
 use Digest::SHA qw(sha256_base64);
 
 # curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"fetch\",\"start\":202307120000,\"end\":202307130000,\"group\":\"建物A_1F\"}" "http://localhost/cgi-bin/reserv/perl.cgi"
+# curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"add\",\"eventId\":-1,\"row\":\"A-101\",\"group\":\"建物A_1F\",\"start\":202307131000,\"end\":202307131100,\"others\":{\"name\":\"Tarou\",\"domain\":\"GroupA\",\"contact\":\"mail.com\"}}" "http://localhost/cgi-bin/reserv/perl.cgi"
+# curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"delete\",\"eventId\":-1}" "http://localhost/cgi-bin/reserv/perl.cgi"
 
 # https://www.futomi.com/lecture/json.html#gsc.tab=0
 my $logdir = ".";
@@ -47,7 +49,7 @@ my $rj = $json->decode($request);
 # 保存ファイルでは、
 # 0: id, 1: group, 2: row, 3: start, 4: end, 5: name, 6: domain, 7: contactの順
 
-if ($rj->{"type"} == "fetch") {
+if ($rj->{"type"} eq "fetch") {
     my $start = $rj->{"start"};
     my $end = $rj->{"end"};
     my $group = $rj->{"group"};
@@ -65,7 +67,7 @@ if ($rj->{"type"} == "fetch") {
     close IN;
     print $json->encode(@events);
 
-} elsif ($rj->{"type"} == "delete") {
+} elsif ($rj->{"type"} eq "delete") {
     my $event_id = $rj->{"eventId"};
     my $hashed_password = "";
 
