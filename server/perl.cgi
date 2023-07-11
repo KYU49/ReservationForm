@@ -87,7 +87,7 @@ if ($rj->{"type"} eq "fetch") {
             while(<FD>){
                 if($_ =~ /^$event_id\t/){   # 削除対象ならスキップ
                     my @l = split(/\t/, $_);
-                    if ($hashed_password eq "" || $hashed_password eq $l[$password_row]){
+                    if ($hashed_password eq "" || $hashed_password eq $l[$password_row]){   #FIXME パスワード設定しないと必ず変更できちゃう？
                         $error_handler = 1;
                         next;
                     } else {
@@ -152,7 +152,7 @@ if ($rj->{"type"} eq "fetch") {
                     last;
                 }
                 if($l[0] == $event_id){   # 同じidの予約なら
-                    if ($hashed_password eq "" || $hashed_password eq $l[$password_row]){
+                    if ($hashed_password eq "" || $hashed_password eq $l[$password_row]){   #FIXME パスワード設定しないと必ず変更できちゃう？
                         next;   # パスワードも一致しているため、この予定を編集するためにリストからスキップ
                     } else {
                         $results = {"Error", "パスワードが違います。"};
