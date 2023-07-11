@@ -174,7 +174,7 @@ if ($rj->{"type"} eq "fetch") {
             }
             # 保存ファイルでは、
             # 0: id, 1: group, 2: row, 3: start, 4: end, 5: name, 6: domain, 7: contactの順
-            print $target_id . "\t" . $group . "\t" . $row . "\t" . $start . "\t" . $end . "\t" . $others->{"name"} . "\t" . $others->{"domain"} . "\t" . $others->{"contact"} . "\n";
+            print FD $target_id . "\t" . $group . "\t" . $row . "\t" . $start . "\t" . $end . "\t" . $others->{"name"} . "\t" . $others->{"domain"} . "\t" . $others->{"contact"} . "\n";
         }
     close(FD);
 
