@@ -128,7 +128,7 @@ if ($rj->{"type"} eq "fetch") {
     }
 
     # datからの予定取得
-    my @results = ("Error", "既に予約が入っています。");
+    my $results = {"Error", "既に予約が入っています。"};
     my $error_handler = 1;
     my $target_id = 0;
     open(FD, "+<$logdir/reserv.dat") || die $!;
@@ -144,15 +144,15 @@ if ($rj->{"type"} eq "fetch") {
                     $target_id = @l[0] + 1;
                 }
                 if($l[3] < $end && $start < $l[4] && $group eq $l[1] and $event_id != $l[0]){  # 重複する予定があれば
-                    @results = ("Error", "既に予約が入っています。");
+                    $results = {"Error", "既に予約が入っています。"};
                     $error_handler = 0;
                     last;
                 }
-                if($_ == @l[0]){   # 同じidの予約なら
+                if($l[0] == $event_id){   # 同じidの予約なら
                     if ($hashed_password eq "" || $hashed_password eq $l[$password_row]){
                         next;   # パスワードも一致しているため、この予定を編集するためにリストからスキップ
                     } else {
-                        @results = ("Error", "パスワードが違います。");
+                        $results = {"Error", "パスワードが違います。"};
                         $error_handler = 0;
                     }
                 }
@@ -167,7 +167,7 @@ if ($rj->{"type"} eq "fetch") {
 
                 open(IN, "$logdir/temp.dat") || die $!;
                     while(<IN>){
-                        print FD $_ . "\n";
+                        print FD $_;
                     }
                 close(IN);
                 $target_id = $event_id;
@@ -178,15 +178,15 @@ if ($rj->{"type"} eq "fetch") {
         }
     close(FD);
 
-    if(! $error_handler){
+    if($error_handler){
         if($event_id > 0){
-            @results = ("Success", "予約を更新しました。");
+            $results = {"Success", "予約を更新しました。"};
         }else{
-            @results = ("Success", "予約を追加しました。");
+            $results = {"Success", "予約を追加しました。"};
         }
     }
     
-    print $json->encode(@results);
+    print $json->encode($results);
 }
 
 # パスワードのハッシュ化。強度を上げるために複数回実行
