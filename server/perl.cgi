@@ -75,7 +75,7 @@ if ($rj->{"type"} eq "fetch") {
         $hashed_password = hasher($rj->{"password"}, 10);
     }
     # datからの予定取得
-    my @results = ("Error", "既に予定が削除されています");
+    my $results = {"Error", "既に予定が削除されています"};
     my $error_handler = 0;
 
     open(FD, "+<$logdir/reserv.dat") || die $!;
@@ -91,7 +91,7 @@ if ($rj->{"type"} eq "fetch") {
                         $error_handler = 1;
                         next;
                     } else {
-                        @results = ("Error", "パスワードが違います。");
+                        $results = {"Error", "パスワードが違います。"};
                     }
                 }
                 print OUT $_;
@@ -104,16 +104,19 @@ if ($rj->{"type"} eq "fetch") {
 
         open(IN, "$logdir/temp.dat") || die $!;
             while(<IN>){
-                print FD $_ . "\n";
+                chomp($_);
+                if(length($_) > 0){
+                    print FD $_ . "\n";
+                }
             }
         close(IN);
     close(FD);
 
     if($error_handler){
-        @results = ("Success", "予約を削除しました");
+        $results = {"Success", "予約を削除しました"};
     }
     
-    print $json->encode(@results);
+    print $json->encode($results);
 } else {
     my $event_id = $rj->{"eventId"};
     my $start = $rj->{"start"};
@@ -167,7 +170,10 @@ if ($rj->{"type"} eq "fetch") {
 
                 open(IN, "$logdir/temp.dat") || die $!;
                     while(<IN>){
-                        print FD $_;
+                        chomp($_);
+                        if(length($_) > 0){
+                            print FD $_ . "\n";
+                        }
                     }
                 close(IN);
                 $target_id = $event_id;
