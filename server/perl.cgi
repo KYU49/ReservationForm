@@ -26,7 +26,7 @@ use JSON;
 # use Digest::SHA::PurePerl qw(sha256_base64);
 use Digest::SHA qw(sha256_base64);
 
-# curl -X POST -H "Content-Type: application/json" -d {\"Name\":\"test\"} http://localhost/cgi-bin/reserv/perl.cgi
+# curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"fetch\",\"start\":202307120000,\"end\":202307130000,\"group\":\"建物A_1F\"}" "http://localhost/cgi-bin/reserv/perl.cgi"
 
 # https://www.futomi.com/lecture/json.html#gsc.tab=0
 my $logdir = ".";
