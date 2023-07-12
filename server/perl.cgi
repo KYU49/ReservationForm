@@ -39,6 +39,7 @@ use JSON;
 # https://www.futomi.com/lecture/json.html#gsc.tab=0
 my $logdir = ".";
 my $password_row = 8;
+my $others_row = 5;
 
 # 参考: https://qiita.com/ekzemplaro/items/43dc7cd15f3333dc9285
 my $q = new CGI;
@@ -70,14 +71,14 @@ if ($rj->{"type"} eq "fetch") {
             $var =~ s/\x0D?\x0A?$//;
             my @l = split(/\t/, $var);
             if($l[0] eq "eventId"){ # 1行目はラベル
-                for (my $i = 5; $i <= $#l; $i++){
+                for (my $i = $others_row; $i <= $#l; $i++){
                     push @labels, $l[$i];
                 }
             } else {
                 if($l[3] < $end && $start < $l[4] && $group eq $l[1]){  # 同じグループの指定した時間の予定だけを取得
                     my %others = ();
                     for (my $i = 0; $i <= $#labels; $i++){
-                        $others{$labels[$i]} = $l[$i + 5];
+                        $others{$labels[$i]} = $l[$i + $others_row];
                     }
                     delete($others{"password"});
                     push @events, {"eventId" => $l[0], "group" => $l[1], "row" => $l[2], "start" => $l[3], "end" => $l[4], "others" => \%others};
@@ -106,7 +107,9 @@ if ($rj->{"type"} eq "fetch") {
         open(OUT, ">$logdir/temp.dat") || die $!;
             while(<FD>){
                 if($_ =~ /^$event_id\t/){   # 削除対象ならスキップ
-                    my @l = split(/\t/, $_);
+                    my $var = $_;
+                    $var =~ s/\x0D?\x0A?$//;
+                    my @l = split(/\t/, $var);
                     if ($l[$password_row] eq "" || $hashed_password eq $l[$password_row]){
                         $error_handler = 1;
                         next;
@@ -143,7 +146,7 @@ if ($rj->{"type"} eq "fetch") {
     my $end = $rj->{"end"};
     my $group = $rj->{"group"};
     my $row = $rj->{"row"};
-    my $others =$rj->{"others"};
+    my $others = $rj->{"others"};
     my $hashed_password = "";
 
     if(exists $rj->{"password"}){
@@ -161,22 +164,30 @@ if ($rj->{"type"} eq "fetch") {
         }
         open(OUT, ">$logdir/temp.dat") || die $!;
             while(<FD>){
-                my @l = split(/\t/, $_);
-                # IDの最大値を取得
-                if($target_id <= @l[0]){
-                    $target_id = @l[0] + 1;
-                }
-                if($l[3] < $end && $start < $l[4] && $group eq $l[1] and $event_id != $l[0]){  # 重複する予定があれば
-                    @results = ("Error", "既に予約が入っています。");
-                    $error_handler = 0;
-                    last;
-                }
-                if($l[0] == $event_id){   # 同じidの予約なら
-                    if ($l[$password_row] eq "" || $hashed_password eq $l[$password_row]){   #FIXME パスワード設定しないと必ず変更できちゃう？
-                        next;   # パスワードも一致しているため、この予定を編集するためにリストからスキップ
-                    } else {
-                        @results = ("Error", "パスワードが違います。");
+                my $var = $_;
+                $var =~ s/\x0D?\x0A?$//;
+                my @l = split(/\t/, $var);
+                if($l[0] eq "eventId"){ # 1行目はラベル
+                    for (my $i = $others_row; $i <= $#l; $i++){
+                        push @labels, $l[$i];
+                    }
+                } else {
+                    # IDの最大値を取得
+                    if($target_id <= @l[0]){
+                        $target_id = @l[0] + 1;
+                    }
+                    if($l[3] < $end && $start < $l[4] && $group eq $l[1] and $event_id != $l[0]){  # 重複する予定があれば
+                        @results = ("Error", "既に予約が入っています。");
                         $error_handler = 0;
+                        last;
+                    }
+                    if($l[0] == $event_id){   # 同じidの予約なら
+                        if ($l[$password_row] eq "" || $hashed_password eq $l[$password_row]){
+                            next;   # パスワードも一致しているため、この予定を編集するためにリストからスキップ
+                        } else {
+                            @results = ("Error", "パスワードが違います。");
+                            $error_handler = 0;
+                        }
                     }
                 }
                 print OUT $_;
@@ -200,7 +211,15 @@ if ($rj->{"type"} eq "fetch") {
             }
             # 保存ファイルでは、
             # 0: id, 1: group, 2: row, 3: start, 4: end, 5: name, 6: domain, 7: contactの順
-            print FD $target_id . "\t" . $group . "\t" . $row . "\t" . $start . "\t" . $end . "\t" . $others->{"name"} . "\t" . $others->{"domain"} . "\t" . $others->{"contact"} . "\n";
+            print FD $target_id . "\t" . $group . "\t" . $row . "\t" . $start . "\t" . $end;
+            for (my $i = 0; $i <= $#labels; $i++){
+                if($i + $others_row == $password_row){
+                    print FD "\t" . $hashed_password;
+                } else {
+                    print FD "\t" . $others->{$labels[$i]};
+                }
+            }
+            print FD "\n";
         }
     close(FD);
 
