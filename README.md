@@ -78,7 +78,7 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 よくわからない人用に、サーバーサイドにデモで使っていたGoogle Apps Scriptをそのまま使う方法を以下に示します(ライセンス内容を要確認)。
 * [予約を管理するスプレッドシート](https://docs.google.com/spreadsheets/d/1HNspuMDIj3M2WjFaglreRMwCTX_Cea8RTsie9v-pWBU/edit)を開く。
 * 「ファイル」→「コピーを作成」で自分のGoogle Driveにコピー。
-* コピー後、「拡張機能」→「Apps Script」からスクリプトを開く。
+* 「拡張機能」→「Apps Script」からスクリプトを開く。
 * 右上の「デプロイ」→「デプロイを管理」→「デプロイメントの作成」
 * 「次のユーザーとして実行: 自分」「アクセスできるユーザー: 全員」に設定(初期状態のまま)。
 * 「デプロイ」
@@ -86,16 +86,22 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 * アクセス権を与えることに対する警告ページが表示される。
 * 左下の「Advanced」→「Go to ReservationForm (unsafe)」→「Allow」
 * 「ウェブアプリのURL」をコピーし、paramerters.txtに記載する。
+* スプレッドシートの一番上の行をparamerters.txtに合わせて修正。
 
-また、こちらもセキュリティは保証しませんが、perl用のCGIプログラムも作成しました。以下はApacheのサーバーが動いている前提で、ファイル構成は各自確認してください。  
+また、こちらもあらゆる保証はしませんが、perl用のCGIプログラムも作成しました。  
+以下はLinux (Ubuntu)上にApacheのサーバーが動いている前提の例です。  
+ファイル構成は各自確認してください。  
 * [perl](https://github.com/KYU49/ReservationForm/tree/main/server)内のファイルを全て`/usr/lib/cgi-bin/reserv`に保存。
 * `chmod`でperl.cgiは755, 他は775に設定。
-    - 動かなかったらperl.cgi以外を777にしたら動くが、セキュリティ的によろしくないので、cgi-binの所有者を適切に設定すること。
+    - 動かなかったら(500エラーが出る)、perl.cgi以外を777にしたら動くが、セキュリティ的によろしくないので、cgi-binの所有者を適切に設定すること。
 * `/var/www/html/reserv`に以下のファイルを配置。
     - index.html
     - parameters.txt
     - reservation.css
     - reservation.js
+* 古いperlなどだと、JSONやDigestなどのモジュールが標準で入っていない場合があるため、インストールするか`perl.cgi`内に記載されている指示に従うこと。
+* ファイルの配置場所が前述の場所と異なる場合は、`paramerters.txt`で相対パス or 絶対パスで`perl.cgi`の場所を指定。
+* `reserv.dat`の一番上の行を`parameters.txt`で設定した項目と合わせる(スペースではなく、必ずタブ文字で区切ること)。
 
 
 ## フロントエンドとバックエンドの受け渡し
