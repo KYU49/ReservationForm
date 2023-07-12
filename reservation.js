@@ -760,6 +760,32 @@
             this.unselectCell();
             return true;
         }
+        // ドラッグドロップで移動させた場合の処理。概ねClickEventと同じ
+        moveEventItem(eventId){
+            // idから情報を取得
+            const rowNumEvent = this.model.getEventFromId(eventId);
+            const rowNum = rowNumEvent[0];
+            if(rowNum == -1){
+                return;
+            }
+            const event = rowNumEvent[1];
+            if(this.model.currentEventId == -1){
+                for(let key in this.model.currentEvent.others){
+                    // クリック前の入力項目を復元できるように保存
+                    this.model.reservationValuesBackup[key] = this.model.currentEvent.others[key];    // Viewへの反映などないため、直接入力
+                }
+            }
+            for(let key in event.others){
+                const value = event.others[key];
+                this.model.setReservationTextContent(key, value);
+            }
+            this.model.setReservationRow(this.model.rowsName[rowNum]);
+            this.unselectEvent();
+            this.model.enterChangeMode(eventId);
+
+            return true;
+
+        }
 
         // 時間入力用に選択されているセルを解除
         unselectCell(){
@@ -1552,7 +1578,8 @@
                 // 選択をリセット
                 this.selecting = -1;
                 this.rowNum = -1;
-                this.view.model.enterChangeMode(this.eventId);
+                this.view.model.currentEventId = -1;
+                this.view.controller.moveEventItem(this.eventId);
                 this.view.rendEventSelectToEventElement(this.eventId);
             }
         }
