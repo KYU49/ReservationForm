@@ -18,17 +18,23 @@
 use strict;
 use CGI;
 use utf8;
-use Data::Dumper;
 use URI::Escape;
 use FindBin;
+# perlのバージョンが古いと、DigestとJSONが入っていない場合がある(参考: https://www.futomi.com/lecture/json.html#gsc.tab=0)。
+# その場合はこのファイル(perl.cgi)と同じディレクトリにextlibというフォルダを作成。
+# 以下2つのファイルをダウンロード、解凍し、中に入っているlibファイルの中身をextlibに入れる。
+# https://metacpan.org/pod/Digest::SHA::PurePerl
+# https://metacpan.org/pod/JSON::PP
+# そして、以下2つをコメントインし、その下にある「こっちをコメントアウト」に従う。
 # use lib "$FindBin::Bin/extlib";
-use JSON;
 # use Digest::SHA::PurePerl qw(sha256_base64);
-use Digest::SHA qw(sha256_base64);
+use Digest::SHA qw(sha256_base64);  # こっちをコメントアウト
+use JSON;
 
 # curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"fetch\",\"start\":202307120000,\"end\":202307130000,\"group\":\"建物A_1F\"}" "http://localhost/cgi-bin/reserv/perl.cgi"
 # curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"add\",\"eventId\":-1,\"row\":\"A-101\",\"group\":\"建物A_1F\",\"start\":202307131000,\"end\":202307131100,\"others\":{\"name\":\"Tarou\",\"domain\":\"GroupA\",\"contact\":\"mail.com\"}}" "http://localhost/cgi-bin/reserv/perl.cgi"
 # curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"delete\",\"eventId\":2}" "http://localhost/cgi-bin/reserv/perl.cgi"
+
 
 # https://www.futomi.com/lecture/json.html#gsc.tab=0
 my $logdir = ".";
@@ -37,14 +43,15 @@ my $password_row = 8;
 # 参考: https://qiita.com/ekzemplaro/items/43dc7cd15f3333dc9285
 my $q = new CGI;
 print $q->header(
-	-type=>"text/html",
+	-type=>"application/json",
 	-http_equiv=>"Content-Type",
-	-charset=>"UTF-8"
+	-charset=>"utf-8"
 );
 
 my $json = JSON->new->allow_nonref;
 my $request = uri_unescape($q->param("POSTDATA"));
 my $rj = $json->decode($request);
+my @labels = ();
 
 # 保存ファイルでは、
 # 0: id, 1: group, 2: row, 3: start, 4: end, 5: name, 6: domain, 7: contactの順
@@ -58,14 +65,27 @@ if ($rj->{"type"} eq "fetch") {
     my @events = ();
     my $target = -1;
     open(IN, "$logdir/reserv.dat") || die $!;
-    while(<IN>){
-        my @l = split(/\t/, $_);
-        if($l[3] < $end && $start < $l[4] && $group eq $l[1]){  # 同じグループの指定した時間の予定だけを取得
-            push @events, {"id" => $l[0], "group" => $l[1], "row" => $l[2], "start" => $l[3], "end" => $l[4], "others" => {"name" => $l[5], "domain" => $l[6], "contact" => $l[7]}};
+        while(<IN>){
+            my $var = $_;
+            $var =~ s/\x0D?\x0A?$//;
+            my @l = split(/\t/, $var);
+            if($l[0] eq "eventId"){ # 1行目はラベル
+                for (my $i = 5; $i <= $#l; $i++){
+                    push @labels, $l[$i];
+                }
+            } else {
+                if($l[3] < $end && $start < $l[4] && $group eq $l[1]){  # 同じグループの指定した時間の予定だけを取得
+                    my %others = ();
+                    for (my $i = 0; $i <= $#labels; $i++){
+                        $others{$labels[$i]} = $l[$i + 5];
+                    }
+                    delete($others{"password"});
+                    push @events, {"eventId" => $l[0], "group" => $l[1], "row" => $l[2], "start" => $l[3], "end" => $l[4], "others" => \%others};
+                }
+            }
         }
-    }
     close IN;
-    print $json->encode(@events);
+    print $json->encode(\@events);
 
 } elsif ($rj->{"type"} eq "delete") {
     my $event_id = $rj->{"eventId"};
@@ -75,7 +95,7 @@ if ($rj->{"type"} eq "fetch") {
         $hashed_password = hasher($rj->{"password"}, 10);
     }
     # datからの予定取得
-    my $results = {"Error", "既に予定が削除されています"};
+    my @results = ("Error", "既に予定が削除されています");
     my $error_handler = 0;
 
     open(FD, "+<$logdir/reserv.dat") || die $!;
@@ -87,11 +107,11 @@ if ($rj->{"type"} eq "fetch") {
             while(<FD>){
                 if($_ =~ /^$event_id\t/){   # 削除対象ならスキップ
                     my @l = split(/\t/, $_);
-                    if ($hashed_password eq "" || $hashed_password eq $l[$password_row]){   #FIXME パスワード設定しないと必ず変更できちゃう？
+                    if ($l[$password_row] eq "" || $hashed_password eq $l[$password_row]){
                         $error_handler = 1;
                         next;
                     } else {
-                        $results = {"Error", "パスワードが違います。"};
+                        @results = ("Error", "パスワードが違います。");
                     }
                 }
                 print OUT $_;
@@ -113,10 +133,10 @@ if ($rj->{"type"} eq "fetch") {
     close(FD);
 
     if($error_handler){
-        $results = {"Success", "予約を削除しました"};
+        @results = ("Success", "予約を削除しました");
     }
     
-    print $json->encode($results);
+    print $json->encode(\@results);
 } else {
     my $event_id = $rj->{"eventId"};
     my $start = $rj->{"start"};
@@ -131,7 +151,7 @@ if ($rj->{"type"} eq "fetch") {
     }
 
     # datからの予定取得
-    my $results = {"Error", "既に予約が入っています。"};
+    my @results = ("Error", "既に予約が入っています。");
     my $error_handler = 1;
     my $target_id = 0;
     open(FD, "+<$logdir/reserv.dat") || die $!;
@@ -147,15 +167,15 @@ if ($rj->{"type"} eq "fetch") {
                     $target_id = @l[0] + 1;
                 }
                 if($l[3] < $end && $start < $l[4] && $group eq $l[1] and $event_id != $l[0]){  # 重複する予定があれば
-                    $results = {"Error", "既に予約が入っています。"};
+                    @results = ("Error", "既に予約が入っています。");
                     $error_handler = 0;
                     last;
                 }
                 if($l[0] == $event_id){   # 同じidの予約なら
-                    if ($hashed_password eq "" || $hashed_password eq $l[$password_row]){   #FIXME パスワード設定しないと必ず変更できちゃう？
+                    if ($l[$password_row] eq "" || $hashed_password eq $l[$password_row]){   #FIXME パスワード設定しないと必ず変更できちゃう？
                         next;   # パスワードも一致しているため、この予定を編集するためにリストからスキップ
                     } else {
-                        $results = {"Error", "パスワードが違います。"};
+                        @results = ("Error", "パスワードが違います。");
                         $error_handler = 0;
                     }
                 }
@@ -186,13 +206,13 @@ if ($rj->{"type"} eq "fetch") {
 
     if($error_handler){
         if($event_id > 0){
-            $results = {"Success", "予約を更新しました。"};
+            @results = ("Success", "予約を更新しました。");
         }else{
-            $results = {"Success", "予約を追加しました。"};
+            @results = ("Success", "予約を追加しました。");
         }
     }
     
-    print $json->encode($results);
+    print $json->encode(\@results);
 }
 
 # パスワードのハッシュ化。強度を上げるために複数回実行

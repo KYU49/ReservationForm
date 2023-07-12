@@ -219,10 +219,10 @@
             this.currentDate = new Date();
             this.reservationValuesBackup = {};  // 右ペインのテキスト入力項目について、イベント選択時に既に入力されている内容を保存するため
             this.rowsName = [];
-            this.events = [];   // [0: [{id: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}...}, {}, ], 1: [{}, {}], 2: [{}, {}]]
+            this.events = [];   // [0: [{eventId: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}...}, {}, ], 1: [{}, {}], 2: [{}, {}]]
             this.isRowsOpened = []; // 明日以降の予定が表示されているか
             this.currentEventId = -1;   // 変更中の予定のIDを入れる(直接いじらず、enterChangeModeを使うこと)
-            this.currentEvent = {group: "", row: "", start: 0, end: 0, others: {}}; // 変更中の予定の値 {id: , row0の予定0のstart: , row0の予定0のend: , others: {}
+            this.currentEvent = {group: "", row: "", start: 0, end: 0, others: {}}; // 変更中の予定の値 {eventId: , row0の予定0のstart: , row0の予定0のend: , others: {}
             this.currentGroup = ""; //現在開いている左ペインの部屋などの名前
             this.leftPane = [];     // 左ペイン。[{key: "hoge", name: "hoge" , arr: [{key: "hoge_fuga", name: "huga", arr: ["装置1", "装置2"]}, {}]}, ]
             this.rightPane = [];    // 右ペイン。[{key: "hoge", name: "ほげ", required: false, display: true}, ...], displayはtimelineに表示するか否か
@@ -289,9 +289,9 @@
             this.dispatchEvent({type: Model.CONST.SET_RESERVATION_TEXT_CONTENTS, user: user});
         }
 
-        enterChangeMode(id){    // -1を渡すと編集モードから抜ける
-            this.currentEventId = id;
-            this.dispatchEvent({type: Model.CONST.REFLECT_RESERVATION_BUTTON, id: id});
+        enterChangeMode(eventId){    // -1を渡すと編集モードから抜ける
+            this.currentEventId = eventId;
+            this.dispatchEvent({type: Model.CONST.REFLECT_RESERVATION_BUTTON, id: eventId});
         }
 
         setRowOpenState(rowsNum, isOpen){
@@ -450,7 +450,7 @@
             console.log("Fetch: ", params);
             if(isDebug){
                 // ローカルテスト用のJSON
-                resultJson = JSON.parse('[{"id": 100, "row": "A-101", "start": ' + Number(Utility.getTodayAsYMD() + "1100") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"id": 102,"row": "A-102", "start": ' + Number(Utility.getTodayAsYMD(2) + "1230") + ', "end": ' + Number(Utility.getTodayAsYMD(3) + "0830") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"id": 101, "row": "A-102", "start": ' + Number(Utility.getTodayAsYMD() + "0800") + ', "end":' + Number(Utility.getTodayAsYMD() + "2100") + ', "others": {"name": "TestHanako", "domain": "GroupB", "contact": "09012345678"}}, {"id": 103, "row": "A-201", "start": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1300") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}]');
+                resultJson = JSON.parse('[{"eventId": 100, "row": "A-101", "start": ' + Number(Utility.getTodayAsYMD() + "1100") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"eventId": 102,"row": "A-102", "start": ' + Number(Utility.getTodayAsYMD(2) + "1230") + ', "end": ' + Number(Utility.getTodayAsYMD(3) + "0830") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"eventId": 101, "row": "A-102", "start": ' + Number(Utility.getTodayAsYMD() + "0800") + ', "end":' + Number(Utility.getTodayAsYMD() + "2100") + ', "others": {"name": "TestHanako", "domain": "GroupB", "contact": "09012345678"}}, {"eventId": 103, "row": "A-201", "start": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1300") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}]');
             }else{
                 const response = await fetch(DATABASE_URL, {
                     method: "post",
@@ -1121,7 +1121,7 @@
             });
 
             this.model.addEventListener(Model.CONST.REFLECT_RESERVATION_BUTTON, (event) => {
-                this.reflectReservationButton(event.id);
+                this.reflectReservationButton(event.eventId);
             });
             this.model.addEventListener(Model.CONST.REFLECT_RESERVATION_ROW, (event) => {
                 document.getElementById("rows_pulldown").value = event.rows;
@@ -1376,7 +1376,7 @@
         }
 
         // 右ペーンの変更をmodelに伝えるlistenerなどを設定
-        // model.events: {id: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}}
+        // model.events: {eventId: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}}
         initializeRightPane(){
             const self = this;
             const fe = document.forms.reservationForm.elements;
