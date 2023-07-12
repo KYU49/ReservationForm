@@ -31,6 +31,7 @@
     let MESSAGE_REQUIRED = "は必須です。";    // 入力必須項目に記載される文言(hogehoge MESSAGE_REQUIREDとなる); 英語とかなら"is/are required."にすればよい。
     let SERVER_ERROR = "サーバーとの通信でエラーが発生しました。";
     let DELETE_CONFIRMATION = "の予約を削除します。";
+    const PASS_WORD = "password";
 
     const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
@@ -219,10 +220,10 @@
             this.currentDate = new Date();
             this.reservationValuesBackup = {};  // 右ペインのテキスト入力項目について、イベント選択時に既に入力されている内容を保存するため
             this.rowsName = [];
-            this.events = [];   // [0: [{id: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}...}, {}, ], 1: [{}, {}], 2: [{}, {}]]
+            this.events = [];   // [0: [{eventId: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}...}, {}, ], 1: [{}, {}], 2: [{}, {}]]
             this.isRowsOpened = []; // 明日以降の予定が表示されているか
             this.currentEventId = -1;   // 変更中の予定のIDを入れる(直接いじらず、enterChangeModeを使うこと)
-            this.currentEvent = {group: "", row: "", start: 0, end: 0, others: {}}; // 変更中の予定の値 {id: , row0の予定0のstart: , row0の予定0のend: , others: {}
+            this.currentEvent = {group: "", row: "", start: 0, end: 0, others: {}}; // 変更中の予定の値 {eventId: , row0の予定0のstart: , row0の予定0のend: , others: {}
             this.currentGroup = ""; //現在開いている左ペインの部屋などの名前
             this.leftPane = [];     // 左ペイン。[{key: "hoge", name: "hoge" , arr: [{key: "hoge_fuga", name: "huga", arr: ["装置1", "装置2"]}, {}]}, ]
             this.rightPane = [];    // 右ペイン。[{key: "hoge", name: "ほげ", required: false, display: true}, ...], displayはtimelineに表示するか否か
@@ -233,7 +234,7 @@
         getEventFromId(id){
             for(let i = 0; i < this.events.length; i++){
                 const event = this.events[i];
-                if(event.id == id){
+                if(event.eventId == id){
                     return [this.rowsName.indexOf(event.row), event];
                 }
             }
@@ -285,13 +286,17 @@
         setReservationTextContent(key, text){
             let user = {};
             user[key] = text;
-            this.currentEvent.others[key] = text;
+            if(key == PASS_WORD){
+                this.currentEvent.password = text;
+            }else{
+                this.currentEvent.others[key] = text;
+            }
             this.dispatchEvent({type: Model.CONST.SET_RESERVATION_TEXT_CONTENTS, user: user});
         }
 
-        enterChangeMode(id){    // -1を渡すと編集モードから抜ける
-            this.currentEventId = id;
-            this.dispatchEvent({type: Model.CONST.REFLECT_RESERVATION_BUTTON, id: id});
+        enterChangeMode(eventId){    // -1を渡すと編集モードから抜ける
+            this.currentEventId = eventId;
+            this.dispatchEvent({type: Model.CONST.REFLECT_RESERVATION_BUTTON, eventId: eventId});
         }
 
         setRowOpenState(rowsNum, isOpen){
@@ -344,6 +349,11 @@
                             display: display
                         }
                     );
+                    if(arr[1] == PASS_WORD){
+                        this.currentEvent.password = "";
+                    }else{
+                        this.currentEvent.others[arr[1]] = "";
+                    }
                 }else if(prefix == "$"){
                     const values = row.replaceAll(/^[\$\s]+/g, "").split(/\s*=\s*/);
                     if(values.length < 2){
@@ -426,6 +436,13 @@
                     flag = false;
                 }
             }
+            if(PASS_WORD in this.currentEvent){
+                const value = window.localStorage.getItem(PASS_WORD);
+                if(value){
+                    this.setReservationTextContent(PASS_WORD, value);
+                    flag = false;
+                }
+            }
             if(flag){
                 // reservationのテキストコンテンツのうち、必須項目が抜けてる場合にアラートを表示するため。
                 this.dispatchEvent({type: Model.CONST.SET_RESERVATION_TEXT_CONTENTS, user: {}});
@@ -450,7 +467,7 @@
             console.log("Fetch: ", params);
             if(isDebug){
                 // ローカルテスト用のJSON
-                resultJson = JSON.parse('[{"id": 100, "row": "A-101", "start": ' + Number(Utility.getTodayAsYMD() + "1100") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"id": 102,"row": "A-102", "start": ' + Number(Utility.getTodayAsYMD(2) + "1230") + ', "end": ' + Number(Utility.getTodayAsYMD(3) + "0830") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"id": 101, "row": "A-102", "start": ' + Number(Utility.getTodayAsYMD() + "0800") + ', "end":' + Number(Utility.getTodayAsYMD() + "2100") + ', "others": {"name": "TestHanako", "domain": "GroupB", "contact": "09012345678"}}, {"id": 103, "row": "A-201", "start": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1300") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}]');
+                resultJson = JSON.parse('[{"eventId": 100, "row": "A-101", "start": ' + Number(Utility.getTodayAsYMD() + "1100") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"eventId": 102,"row": "A-102", "start": ' + Number(Utility.getTodayAsYMD(2) + "1230") + ', "end": ' + Number(Utility.getTodayAsYMD(3) + "0830") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}, {"eventId": 101, "row": "A-102", "start": ' + Number(Utility.getTodayAsYMD() + "0800") + ', "end":' + Number(Utility.getTodayAsYMD() + "2100") + ', "others": {"name": "TestHanako", "domain": "GroupB", "contact": "09012345678"}}, {"eventId": 103, "row": "A-201", "start": ' + Number(Utility.getTodayAsYMD() + "1200") + ', "end": ' + Number(Utility.getTodayAsYMD() + "1300") + ', "others": {"name": "TestTarou", "domain": "GroupA", "contact": "09012345678"}}]');
             }else{
                 const response = await fetch(DATABASE_URL, {
                     method: "post",
@@ -490,8 +507,8 @@
                 type: "delete", 
                 eventId: this.currentEventId
             };
-            if(this.currentEvent.others.password){
-                params.password = this.currentEvent.others.password;
+            if(this.currentEvent.password){
+                params.password = this.currentEvent.password;
             }
             console.log("Fetch:", params);
             if(isDebug){
@@ -787,7 +804,7 @@
             console.log("Fetched Events:", resultJson);
             // JSONで取得した予定リストから、1つずつ予定を読み込む
             for(let i = 0; i < resultJson.length; i++){
-                const id = resultJson[i].id;
+                const id = resultJson[i].eventId;
                 for(let j = this.model.events.length - 1; j >= 0; j--){
                     const ev = this.model.events[j];
                     if(ev.id == id){   // 同じ予定が存在する場合は削除
@@ -959,8 +976,8 @@
                     const form = formText[i];
                     const ele = document.createElement("input");
                     const label = document.createElement("label");
-                    if(form.key == "password"){
-                        ele.type = "password";
+                    if(form.key == PASS_WORD){
+                        ele.type = PASS_WORD;
                     }else{
                         ele.type = "text";
                     }
@@ -1042,7 +1059,6 @@
                 for(let i = timelineEvents.length - 1; i >= 0; i--){
                     timelineEvents[i].remove();
                 }
-
                 for (let i = 0; i < events.length; i++){    // events内のデータを順に取得
                     const ev = events[i];
                     let startCellNum = Utility.time2cell(Utility.ymdhm2date(ev.start), this.model.currentDate);      // 予約開始時間のセルを取得
@@ -1121,7 +1137,7 @@
             });
 
             this.model.addEventListener(Model.CONST.REFLECT_RESERVATION_BUTTON, (event) => {
-                this.reflectReservationButton(event.id);
+                this.reflectReservationButton(event.eventId);
             });
             this.model.addEventListener(Model.CONST.REFLECT_RESERVATION_ROW, (event) => {
                 document.getElementById("rows_pulldown").value = event.rows;
@@ -1189,7 +1205,7 @@
             }
 
             ele.style.width = "calc(" + eventLength * 100 + "% + " + eventLength + "px)";   // cellのboader分だけここで足している。
-            const id = ev.id;
+            const id = ev.eventId;
             ele.classList.add(View.CONST.ID_PREFIX + id);   // 数日にまたがるイベントを取得するために、同じ予定には同じclassを指定する。
             ele.dataset.eventId = id;
 
@@ -1376,7 +1392,7 @@
         }
 
         // 右ペーンの変更をmodelに伝えるlistenerなどを設定
-        // model.events: {id: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}}
+        // model.events: {eventId: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}}
         initializeRightPane(){
             const self = this;
             const fe = document.forms.reservationForm.elements;
@@ -1394,12 +1410,6 @@
             fe.cancel.addEventListener("click", (e) => {
                 this.controller.unselectEvent();
             });
-
-            // currentEventを初期化
-            const formText = Utility.getElementsByInputType("text", "password");
-            for (let i = 0; i < formText.length; i++){
-                this.model.currentEvent.others[formText[i].name] = "";
-            }
 
             // 変更の監視
             const pulldown = document.getElementById("rows_pulldown");
@@ -1422,6 +1432,7 @@
 
             // 名前など必須項目の入力がなかったら、予約ボタンを無効
             // その他値を再設定して、modelに渡すなど(setterはUIからの入力を拾わない)。
+            const formText = Utility.getElementsByInputType("text", PASS_WORD);
             for(let i = 0; i < formText.length; i++) {
                 formText[i].addEventListener("input", (event) => {
                     this.model.setReservationTextContent(event.currentTarget.name, event.currentTarget.value);
@@ -1518,7 +1529,7 @@
                 return;
             }
             this.rowNumBackup = this.view.model.rowsName.indexOf(cEvent.row);
-            this.eventId = cEvent.id;
+            this.eventId = cEvent.eventId;
             this.toBackup = Utility.time2cell(Utility.ymdhm2date(cEvent.end), this.view.model.currentDate);
             this.fromBackup = Utility.time2cell(Utility.ymdhm2date(cEvent.start), this.view.model.currentDate)
             this.rLength = this.toBackup - this.fromBackup;
