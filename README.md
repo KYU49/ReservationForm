@@ -153,9 +153,9 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
     "others": {
         "name": "TestTarou", 
         "domain": "GroupA", 
-        "contact": "09012345678",
-        "password": "asdfghjkl",
+        "contact": "09012345678"
     }
+    "password": "asdfghjkl"
 }
 ```
 基本的にはfetchの時と同じ形です。新規作成の場合には`eventId = -1`でpostされます。othersにはparameters.txtで指定したフォームの項目が全て入るため、適切に処理してください。
@@ -179,7 +179,7 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
     password: "asdfghjkl"
 }
 ```
-passwordはparameters.txtで**設定している場合のみ**送信されます。deleteの場合だけ、passwordをothers内ではなく直接書くように気をつけてください。
+passwordはparameters.txtで**設定している場合のみ**送信されます。
 #### サーバー → フロントエンド
 サーバー側で以下のように整形してフロントエンドに返してください。
 ```js
