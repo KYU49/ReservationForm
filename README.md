@@ -87,6 +87,17 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 * 左下の「Advanced」→「Go to ReservationForm (unsafe)」→「Allow」
 * 「ウェブアプリのURL」をコピーし、paramerters.txtに記載する。
 
+また、こちらもセキュリティは保証しませんが、perl用のCGIプログラムも作成しました。以下はApacheのサーバーが動いている前提で、ファイル構成は各自確認してください。  
+* [perl](https://github.com/KYU49/ReservationForm/tree/main/server)内のファイルを全て`/usr/lib/cgi-bin/reserv`に保存。
+* `chmod`でperl.cgiは755, 他は775に設定。
+    - 動かなかったらperl.cgi以外を777にしたら動くが、セキュリティ的によろしくないので、cgi-binの所有者を適切に設定すること。
+* `/var/www/html/reserv`に以下のファイルを配置。
+    - index.html
+    - parameters.txt
+    - reservation.css
+    - reservation.js
+
+
 ## フロントエンドとバックエンドの受け渡し
 基本的に全てJSONでやり取りするようにしています。POSTでやりとりされるように設計しています。詳細は以下。
 ### Fetch
