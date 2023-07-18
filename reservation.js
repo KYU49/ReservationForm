@@ -33,7 +33,7 @@
     let DELETE_CONFIRMATION = "の予約を削除します。";
     const PASS_WORD = "password";
 
-    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
@@ -1332,6 +1332,27 @@
             this.controller.reservationDateSelected(rowsNum, from, to);
         }
 
+        mouseStalkerRend(e, from, to){            
+            //イベントオブジェクトを参照し、カーソル位置情報を取得
+            const mousePosX = e.clientX;
+            const mousePosY = e.clientY;  
+            const mouse = document.getElementById("mouseStalker");
+            mouse.classList.add("active");
+            const mouseWidth = mouse.clientWidth;
+            const cssPosAjust = mouseWidth / 2;
+            const x = mousePosX - cssPosAjust;
+            const y = mousePosY - mouse.clientHeight;
+
+            //カーソルの位置情報を「mouseStalker」に反映
+            mouse.style.left = x + "px";
+            mouse.style.top = y + "px";
+            mouse.innerText = from + "-" + to;
+        }
+        mouseStalkerHide(){
+            const mouse = document.getElementById("mouseStalker");
+            mouse.classList.remove("active");
+        }
+
         // 予約項目を描画
         rendRows(name){
             const timeline_main = document.getElementById("timeline_main");
@@ -1378,6 +1399,7 @@
                         cell.addEventListener("mousedown", (event) => this.selector.mousedown(event));
                         cell.addEventListener("mouseup", (event) => this.selector.mouseup(event));
                         cell.addEventListener("mouseenter", (event) => this.selector.mousehover(event));
+                        cell.addEventListener("mousemove", (event) => this.selector.mousemove(event));
                         cell.addEventListener("dragover", (event) => this.dragSelector.dragover(event));  // drop可能にする
                         cell.addEventListener("dragleave", (event) => this.dragSelector.dragleave(event));  // drop可能にする
                         cell.addEventListener("drop", (event) => this.dragSelector.drop(event));  // drop可能にする
@@ -1501,6 +1523,7 @@
                 // 選択をリセット
                 this.selecting = -1;
                 this.rowNum = -1;
+                this.view.mouseStalkerHide();
             }
         }
         mousehover(event){
@@ -1518,6 +1541,21 @@
                 }
                 this.view.selector_rend(this.rowNum, from, to);
                 this.view.selector_reflect(this.rowNum, from, to);
+            }
+        }
+        mousemove(event){
+            if(this.selecting >= 0){
+                let from = this.selecting;
+                let to = this.getSelectedCellNumber(event);
+                if(from > to){
+                    from = to;
+                    to = this.selecting;
+                }
+                this.view.mouseStalkerRend(
+                    event, 
+                    Utility.date2hhmm(Utility.cell2time(from, this.view.model.currentDate), true), 
+                    Utility.date2hhmm(Utility.cell2time(to, this.view.model.currentDate, true), true)
+                );
             }
         }
         getSelectedRowNumber(event){
