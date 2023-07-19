@@ -1253,7 +1253,11 @@
             if(this.model.eventContents.length > 0){  // このコード上部で最初に指定した項目を描画
                 let innerText = ev.others[this.model.eventContents[0]];
                 for(let i = 1; i < this.model.eventContents.length; i++){
-                    innerText += "\n" + ev.others[this.model.eventContents[i]];
+                    let tempOther = ev.others[this.model.eventContents[i]]
+                    if(!tempOther){
+                        tempOther = "";
+                    }
+                    innerText += "\n" + tempOther;
                 }
                 textEle.innerText = innerText;
             }
