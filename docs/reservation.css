@@ -21,6 +21,8 @@
     --font_gray: #54595E;
     --font_lightgray: #94999E;
     --font_dark: #34393E;
+    --font_red: #cc0000;
+    --font_lightred: #eb5c63;
     --bg_header: #302020;
     --underbar_time: #54595E;
     --underbar_time_even: #f4595E;
@@ -384,6 +386,7 @@ form label .caption::before{
     text-align: center;
     border: solid 0px var(--bg_toast);     /* 枠線指定 */
     border-radius: 5px;        /* 角丸指定 */
+    pointer-events: none;   /* 選択できないように */
 }
 #toast.active{
     opacity: 1;

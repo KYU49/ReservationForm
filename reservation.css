@@ -386,10 +386,25 @@ form label .caption::before{
     text-align: center;
     border: solid 0px var(--bg_toast);     /* 枠線指定 */
     border-radius: 5px;        /* 角丸指定 */
+    pointer-events: none;   /* 選択できないように */
 }
 #toast.active{
     opacity: 1;
     pointer-events: auto;
+}
+
+#mouseStalker{
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 10%;
+    background-color: white;
+    z-index: 10000;
+    pointer-events: none;
+}
+#mouseStalker.active{
+    opacity: 1;
 }
 
 #loading {
