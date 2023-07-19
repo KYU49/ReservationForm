@@ -33,7 +33,7 @@
     let DELETE_CONFIRMATION = "の予約を削除します。";
     const PASS_WORD = "password";
 
-    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
@@ -764,10 +764,6 @@
         moveEventItem(eventId){
             // idから情報を取得
             const rowNumEvent = this.model.getEventFromId(eventId);
-            const rowNum = rowNumEvent[0];
-            if(rowNum == -1){
-                return;
-            }
             const event = rowNumEvent[1];
             if(this.model.currentEventId == -1){
                 for(let key in this.model.currentEvent.others){
@@ -779,7 +775,6 @@
                 const value = event.others[key];
                 this.model.setReservationTextContent(key, value);
             }
-            this.model.setReservationRow(this.model.rowsName[rowNum]);
             this.unselectEvent();
             this.model.enterChangeMode(eventId);
 
@@ -1615,6 +1610,7 @@
             this.rowNum = -1;
         }
 
+        // ドラッグ終了
         drop(event){
             if(this.selecting >= 0){
                 // 選択をリセット
