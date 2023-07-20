@@ -285,6 +285,9 @@
         }
         setReservationTextContent(key, text){
             let user = {};
+            if(!text || text == "null" || text =="undefined"){
+                text = "";
+            }
             user[key] = text;
             if(key == PASS_WORD){
                 this.currentEvent.password = text;
