@@ -1383,7 +1383,6 @@
                     });
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
                         let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(timeline_rows);
-                        console.log(rowNums);
                         if(this.model.isRowsOpened[rowNums]){
                             ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true) + "<br>" + name;
                         }else{
