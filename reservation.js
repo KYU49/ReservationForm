@@ -1382,7 +1382,11 @@
                         }
                     });
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
-                        ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true) + "<br>" + name;
+                        if(this.model.isRowsOpened[rowNums]){
+                            ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true) + "<br>" + name;
+                        }else{
+                            event.currentTarget.innerHTML = name;
+                        }
                     });
                 }else{
                     ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true);
