@@ -1382,7 +1382,12 @@
                         }
                     });
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
-                        ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true) + "<br>" + name;
+                        let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(timeline_rows);
+                        if(this.model.isRowsOpened[rowNums]){
+                            ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true) + "<br>" + name;
+                        }else{
+                            ele.innerHTML = name;
+                        }
                     });
                 }else{
                     ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true);
