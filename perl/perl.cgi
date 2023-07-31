@@ -176,7 +176,7 @@ if ($rj->{"type"} eq "fetch") {
                     if($target_id <= @l[0]){
                         $target_id = @l[0] + 1;
                     }
-                    if($l[3] < $end && $start < $l[4] && $group eq $l[1] and $event_id != $l[0]){  # 重複する予定があれば
+                    if($l[3] < $end && $start < $l[4] && $group eq $l[1] && $event_id != $l[0] && $row eq $l[2]){  # 重複する予定があれば
                         @results = ("Error", "既に予約が入っています。");
                         $error_handler = 0;
                         last;
