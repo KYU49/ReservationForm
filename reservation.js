@@ -33,7 +33,7 @@
     let DELETE_CONFIRMATION = "の予約を削除します。";
     const PASS_WORD = "password";
 
-    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
@@ -82,11 +82,9 @@
         // 2つのDate objectを引数にとり、前者の年月日と後者の時分を合わせたDate objectを生成
         static mergeYMDdateAndHMdate(ymdDate, hmDate){
             let date = new Date();
+            date.setFullYear(ymdDate.getFullYear(), ymdDate.getMonth(), ymdDate.getDate());
             date.setHours(hmDate.getHours());
             date.setMinutes(hmDate.getMinutes());
-            date.setFullYear(ymdDate.getFullYear());
-            date.setMonth(ymdDate.getMonth());
-            date.setDate(ymdDate.getDate());
             date.setSeconds(0);
             return date;
         }
