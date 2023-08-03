@@ -1341,7 +1341,7 @@
             const mouseWidth = mouse.clientWidth;
             const cssPosAjust = mouseWidth / 2;
             const x = mousePosX - cssPosAjust;
-            const y = mousePosY - mouse.clientHeight;
+            const y = mousePosY - mouse.clientHeight + window.scrollY;
 
             //カーソルの位置情報を「mouseStalker」に反映
             mouse.style.left = x + "px";
