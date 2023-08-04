@@ -52,6 +52,7 @@
     --bar_form: #ccbbbb;
     --event_selected: #f4a9ae;
     --row_height: 7ex;
+    --header_height: 50px;
 }
 *{
     margin: 0;
@@ -60,10 +61,23 @@
 }
 html {
     overflow-y: scroll;
+    /* IE, Edge 対応 */
+    -ms-overflow-style: none;
+    /* Firefox 対応 */
+    scrollbar-width: none;
 }
+/* Chrome, Safari 対応 */
+html::-webkit-scrollbar {
+    display: none;
+}
+
 header{
     display: flex;
-    padding: 10px 15px;
+    padding: 0 15px;
+
+    max-height: var(--header_height);
+    min-height: var(--header_height);
+
     background: var(--bg_header);
     color: var(--font_light);
     align-items: center;
@@ -86,12 +100,22 @@ body{
     min-height: 100lvh;
     display: flex;
     flex-direction: column;
+    padding: 0;
 }
 main{
     display: flex;  /* 横並びにするため */
     width: 100%;
 
     flex-grow: 1;   /* 画面いっぱいにするため */
+}
+#timeline{
+    min-width: 65%;
+    max-height: calc(100vh - var(--header_height));
+    box-sizing: border-box;
+    padding-bottom: 0;
+    
+    display:flex;
+    flex-flow: column;
 }
 #timeline_header{
     display: flex;
@@ -117,7 +141,19 @@ main{
 
 #timeline_main{
     width: 100%;
+    box-sizing: border-box;
+    overflow-y: scroll;
+
+    /* IE, Edge 対応 */
+    -ms-overflow-style: none;
+    /* Firefox 対応 */
+    scrollbar-width: none;
 }
+/* Chrome, Safari 対応 */
+#timeline_main::-webkit-scrollbar {
+    display: none;
+}
+
 .timeline_rows{
     width: 100%;
     border-bottom: 2px solid var(--underbar_row_sep);
@@ -313,15 +349,19 @@ form label .caption::before{
 #group_list{
     background: var(--bg_list);
     color: white;
+    
+    max-height: calc(100vh - var(--header_height));
     min-width: 15%;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
-#timeline{
-    min-width: 65%;
-}
+
 #form_container{
     background-color: var(--bg_form);
     min-width: 20%;
+    overflow-y: auto;
 }
+
 #form_container.editing{
     background-color: var(--bg_form_editing);
 }
