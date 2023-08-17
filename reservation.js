@@ -218,6 +218,7 @@
             this.currentDate = new Date();
             this.reservationValuesBackup = {};  // 右ペインのテキスト入力項目について、イベント選択時に既に入力されている内容を保存するため
             this.rowsName = [];
+            this.rowsExplain = [];
             this.events = [];   // [0: [{eventId: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}...}, {}, ], 1: [{}, {}], 2: [{}, {}]]
             this.isRowsOpened = []; // 明日以降の予定が表示されているか
             this.currentEventId = -1;   // 変更中の予定のIDを入れる(直接いじらず、enterChangeModeを使うこと)
@@ -387,30 +388,41 @@
                             break;
                     }
                 }else{
-                    const name = row.match(/(?<=.\s+)[^\[]+/)?.[0]; // 名前の部分
+                    const name = row.match(/(?<=.\s+)[^\[\{]+/)?.[0]; // 名前の部分
                     const suffix = row.match(/(?<=\[).*?(?=\])/)?.[0];   // カッコ内の文字を取得
+                    let explain = row.match(/(?<=\{).*?(?=\})/)?.[0];   // カッコ内の文字を取得
                     
                     // 特定の条件でのみ表示する場合はここで早期continue
                     if(suffix){
                         if(!location.search.includes(suffix)){
+                            if(prefix == "#"){  // 中身も全て特定条件表示にするため。
+                                gparent = null;
+                                parent = null;
+                            }
+                            if(prefix == "+"){
+                                parent = null;
+                            }
                             continue;
                         }
+                    }
+                    if(!explain){
+                        explain = "";
                     }
                     if(prefix == "#"){  // 建物名
                         gparent = [];
                         fullName = [name, ""];
-                        this.leftPane.push({key: name, name: name, arr: gparent});
+                        this.leftPane.push({key: name, name: name, arr: gparent, explain: explain});
                     }else if(prefix == "+"){   // フロア名など
                         if(gparent){
                             parent = [];
                             fullName = [fullName[0], name];
-                            gparent.push({key: fullName.join("_"), name: name, arr: parent});
+                            gparent.push({key: fullName.join("_"), name: name, arr: parent, explain: explain});
                             fullName.push("");
                         }
                     }else if(prefix == "*"){    // 装置・部屋名など
                         if(parent){
                             fullName[2] = name;
-                            parent.push({key: fullName.join("_"), name: name});
+                            parent.push({key: fullName.join("_"), name: name, explain: explain});
                         }
                     }
                 }
@@ -558,6 +570,21 @@
                 }
             }
             return rowsName;
+        }
+        getRowsExplainInGroup(groupName){
+            const rowsExplain = [];
+            for(let i in this.leftPane){
+                const gparent = this.leftPane[i];
+                for(let j in gparent.arr){
+                    const parent = gparent.arr[j];
+                    if(parent.key == groupName){
+                        for(let k in parent.arr){
+                            rowsExplain.push(parent.arr[k].explain);
+                        }
+                    }
+                }
+            }
+            return rowsExplain;
         }
     }
 
@@ -799,6 +826,7 @@
         // 左ペインクリックや初回起動時(Rowのデータの変更が入る)
         switchGroup(groupName){
             this.model.rowsName = this.model.getRowsInGroup(groupName);
+            this.model.rowsExplain = this.model.getRowsExplainInGroup(groupName);
             if(this.model.currentGroup != groupName || this.model.isRowsOpened.length == 0){   // 現在のGroupが再選択された場合(日付変更など)は開いているrowを閉じない。isRowOpenedは初期化時なら空なので、初期化タイミングでも実施。
                 this.model.isRowsOpened = Array(this.model.rowsName.length).fill(false);
                 this.model.currentEvent.row = this.model.rowsName[0];
@@ -974,6 +1002,7 @@
                     const eleSection = document.createElement("li");
                     eleSection.classList.add("section");
                     eleSection.innerHTML = section.name;
+                    eleSection.title = section.name + ": " + section.explain;
                     eleSection.appendChild(document.createElement("ul"));
                     eleContainer.appendChild(eleSection);
 
@@ -983,6 +1012,7 @@
                         li.classList.add("group");
                         li.setAttribute("data-group", group.key);
                         li.innerHTML = group.name;
+                        li.title = group.name + ": " + group.explain;
                         eleSection.lastChild.appendChild(li);
                     }
                 }
@@ -1367,6 +1397,9 @@
                 // 2行目からは同一の部屋の翌日以降のタイムライン
                 if(i == 0){
                     ele.innerHTML = name;
+                    // 説明文を無理やり取得
+                    const explain = this.model.rowsExplain[this.model.rowsName.indexOf(name)];
+                    ele.title = name + ": " + explain;
                     ele.classList.add("timeline_label");
                     this.model.isRowsOpened.push(false);
                     ele.addEventListener("click", (event) => {

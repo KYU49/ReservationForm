@@ -11,6 +11,7 @@
 // URLの最後に「https://hogehoge/index.html?Group1」のようにした場合のみ表示されるようになります。
 // 注意: 部分一致でも表示されるため、「https://hogehoge/index.html?Group10」でも表示されてしまいます。
 // [Group1][Group2]の両方を表示したい場合は「https://hogehoge/index.html?Group1Group2」で表示可能。
+// 「+ 難しい機器{この機器の使い方は～}」のように{}内に説明を入力すると、マウスオーバーで表示されます。
 // htmlによる装飾(<br>や<font color="red"></font>など)使用可能
 ------------------ */
 
@@ -19,8 +20,8 @@
 * A-101
 * A-102
 + 2F
-* A-201
-* A-202[Group1]
+* A-201{定員10名}
+* A-202[Group1]{定員100名}
 # 建物B
 + 1F
 * 第1会議室
