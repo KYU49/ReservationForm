@@ -143,11 +143,25 @@
             time.setMinutes(minutes);
             return time;
         }
-        // 
+        // ymd形式で与えた日付にoffset/日を足して、ymd形式で返す。
         static addOffsetToYmd(ymd, offset, hyphen = false){
-            const d = Utility.ymd2date(hyphen?ymd.replaceAll(/\-/g, ""):ymd);
+            const d = Utility.ymd2date((ymd + "").replaceAll(/\-/g, ""));
             d.setDate(d.getDate() + offset);
             return Utility.date2ymd(d, hyphen);
+        }
+        // addOffsetToYmdと同じ処理だが、アウトプットが曜日。jaをtrueにすると、月, 火, ...の文字で返す。falseだとMon, Tue, ...
+        static addOffsetToYmdAsDOW(ymd, offset, ja = false){
+            const d = Utility.ymd2date((ymd + "").replaceAll(/\-/g, ""));
+            d.setDate(d.getDate() + offset);
+            return this.dateToDayOfWeek(d, ja);
+        }
+        static dateToDayOfWeek(date, ja = false){
+            const day = date.getDay();
+            if(ja){
+                return ["日", "月", "火", "水", "木", "金", "土"][day];
+            }else{
+                return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day];
+            }
         }
         static getElementsByInputType(...type){
             const inputs = document.getElementsByTagName("input");
@@ -1407,7 +1421,7 @@
                         let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
                         this.controller.openRows(rowNums, !this.model.isRowsOpened[rowNums]);
                         if(this.model.isRowsOpened[rowNums]){
-                            event.currentTarget.innerHTML = Utility.date2ymd(this.model.currentDate, true) + "<br>" + name;
+                            event.currentTarget.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true) + "<br>" + name;
                         }else{
                             event.currentTarget.innerHTML = name;
                         }
@@ -1415,16 +1429,16 @@
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
                         let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(timeline_rows);
                         if(this.model.isRowsOpened[rowNums]){
-                            ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true) + "<br>" + name;
+                            ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, 0, true) + "<br>" + name;
                         }else{
                             ele.innerHTML = name;
                         }
                     });
                 }else{
-                    ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true);
+                    ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);
                     ele.classList.add("timeline_label_date");
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
-                        ele.innerText = Utility.addOffsetToYmd(event.ymd, i, true);
+                        ele.innerText = Utility.addOffsetToYmd(event.ymd, i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, i, true);
                     });
                     timeline_row.classList.add("timeline_row_hide");
                 }
