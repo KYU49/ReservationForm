@@ -23,6 +23,7 @@
     --font_dark: #34393E;
     --font_red: #cc0000;
     --font_lightred: #eb5c63;
+    --font_link_blue: #1c74e9;
     --bg_header: #302020;
     --underbar_time: #54595E;
     --underbar_time_even: #f4595E;
@@ -45,6 +46,8 @@
     --bg_button_disabled: #c4c9cE;
     --bg_button_hover: #3c94f9;
     --bg_button_active: #0c54c9;
+    --bg_saturday: #0000ff22;
+    --bg_sunday: #ff000022;
     --border_negative_button: #1c74e999;
     --bg_negative_button_hover: #ffffff55;
     --bg_nvegative_button_active: #00000033;
@@ -73,7 +76,7 @@ html::-webkit-scrollbar {
 
 header{
     display: flex;
-    padding: 0 15px;
+    padding: 0 5px;
 
     max-height: var(--header_height);
     min-height: var(--header_height);
@@ -82,30 +85,28 @@ header{
     color: var(--font_light);
     align-items: center;
 }
+form[name="currentDate"] input{
+    display: inline-block;
+    vertical-align: middle;
+}
+.navigate_day{
+    color: var(--font_light)!important;
+    min-width: 2em;
+    padding: 3px 0!important;
+    margin: 0!important;
+}
 .github_url{
     margin-left: auto;
 }
-.github_url a:link{
+a:link{
     color: var(--font_lightred);
 }
-.github_url a:visited{
+a:visited{
     color: var(--font_red);
 }
-.github_url a:hover{
+a:hover{
     color: var(--font_light);
 }
-
-/* DS用で追記 */
-header a:link{
-    color: var(--font_lightred);
-}
-header a:visited{
-    color: var(--font_red);
-}
-header a:hover{
-    color: var(--font_light);
-}
-
 body{
     height: 100vh;
     /* 画面いっぱいにするため. https://qiita.com/KokiSakano/items/d73c89b9eb9b6e605c22 */
@@ -178,6 +179,12 @@ main{
     border-bottom: 1px solid var(--vertical_bar_timeline);
     overflow: hidden;
     transition: height 0.1s ease-out;
+}
+.timeline_label_date.saturday{
+    background-color: var(--bg_saturday);
+}
+.timeline_label_date.sunday{
+    background-color: var(--bg_sunday);
 }
 .timeline_row div{
     box-sizing: border-box;
@@ -266,15 +273,6 @@ main{
     background-color: var(--event_selected);
 }
 
-
-#group_list ul{
-    padding-left: 2px;
-    margin: 0 2px;
-}
-#group_list li{
-    padding: 5px 5px;
-    list-style-position: inside;
-}
 input {
     font-size: 1em;
 }
@@ -290,6 +288,7 @@ button, form input[type="button"]{
     background-color: var(--bg_button);
     color: var(--font_light);
     padding: 5px 10px;
+    margin: 2px 5px;
     text-align: center;
     border: solid 0px var(--bg_transparent);
     border-radius: 5px;        /* 角丸指定 */
@@ -325,12 +324,24 @@ form label .caption{
 form label .caption::before{
     content: "# ";
 }
-.section{
-    cursor: pointer;
+
+#group_list ul{
+    padding-left: 2px;
+    margin: 0 2px;
 }
+#group_list li{
+    padding: 5px 5px;
+    list-style-position: inside;
+}
+
 .group{
     cursor: pointer;
+    list-style-type: circle;
     transition: all 0.3s ease-out;
+}
+/* URL表示の際に、bulletまで色が変わるのを防ぐ */
+.group::marker{
+    color: var(--font_light);
 }
 .group:hover {
     background-color: var(--bg_list_dark);
@@ -344,6 +355,9 @@ form label .caption::before{
 }
 .group_selected:hover{
     background-color: var(--bg_list_selected);
+}
+.link{
+    color: var(--font_link_blue);
 }
 .container{
     padding: 10px 5px;

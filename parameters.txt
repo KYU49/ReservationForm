@@ -34,6 +34,10 @@
 * ベンチC (A隣)
 * ベンチD (B隣)
 
+# 外部リンク
++ 会議室予約{https://ecots1.daiichisankyo.com/sites/1070/ResFuncMtgRm/Lists/3002F/calendar.aspx}
++ 第n会議室{http://pksyap01.jpn-pharm.ad.local/scripts/webhello/pc/default.asp}
+
 - 名前,name,*+
 - 備考,domain,+
 - 所属,contact,

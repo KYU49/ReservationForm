@@ -27,15 +27,15 @@
 </head>
 <body>
   <header>
-    <form name="currentDate" style="display: inline-block;">
+    <form name="currentDate">
+      <input value="&lt;" class="negative navigate_day" name="previousDay" type="button" />
       <input name="date" type="date" onkeydown="return false" />  <!-- 直接入力だと、入力のたびにchangeが走るため、直接入力を禁止 -->
+      <input value="&gt;" class="negative navigate_day" name="nextDay" type="button" />
+      <button id="moveToToday">今日</button>
     </form>
-    <button id="moveToToday">今日</button>
-    　<a href="https://ecots1.daiichisankyo.com/sites/1070/ResFuncMtgRm/Lists/3002F/calendar.aspx" target="_blank">会議室</a>
-    　<a href="http://pksyap01.jpn-pharm.ad.local/scripts/webhello/pc/default.asp" target="_blank">第n会議室</a>
     　標準PCの画面では、拡大率75 %を推奨(Ctrlキーを押しながら「-」を3回)。
     <sectoin class="github_url">
-      不具合報告や追加依頼などは<a href="mailto:hibino.masaki.az@daiichisankyo.co.jp">こちら(柾)</a>まで。
+      不具合報告や追加依頼などは<a href="mailto:hibino.masaki.az@daiichisankyo.co.jp">こちら</a>まで。
     </section>
   </header>
   <main>
