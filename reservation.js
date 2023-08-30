@@ -332,7 +332,7 @@
         }
 
         async loadParameters(){
-            const response = await fetch("parameters.txt?230823");
+            const response = await fetch("parameters.txt?" + Math.random());
             const responseText = await response.text();
             const parameters = responseText.replaceAll(/\/\*[.\r\n\s]*?\*\/]/g, "").split(/\r\n/);
             let fullName = [];
@@ -1477,7 +1477,13 @@
                         }
                     });
                 }else{
-                    ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);
+                    ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);                    
+                    const dow = Utility.ymd2DowNum(Utility.date2ymd(this.model.currentDate), i);
+                    if(dow == 0){  // 日
+                        ele.classList.add("sunday");
+                    }else if(dow == 6){  // 土
+                        ele.classList.add("saturday");
+                    }
                     ele.classList.add("timeline_label_date");
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
                         ele.innerText = Utility.addOffsetToYmd(event.ymd, i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, i, true);
@@ -1488,7 +1494,6 @@
                             ele.classList.remove("sunday");
                         }
                         const dow = Utility.ymd2DowNum(event.ymd, i);
-                        console.log(dow);
                         if(dow == 0){  // 日
                             ele.classList.add("sunday");
                         }else if(dow == 6){  // 土
