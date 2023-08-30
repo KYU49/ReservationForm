@@ -23,6 +23,7 @@
     --font_dark: #34393E;
     --font_red: #cc0000;
     --font_lightred: #eb5c63;
+    --font_link_blue: #1c74e9;
     --bg_header: #302020;
     --underbar_time: #54595E;
     --underbar_time_even: #f4595E;
@@ -97,13 +98,13 @@ form[name="currentDate"] input{
 .github_url{
     margin-left: auto;
 }
-.github_url a:link{
+a:link{
     color: var(--font_lightred);
 }
-.github_url a:visited{
+a:visited{
     color: var(--font_red);
 }
-.github_url a:hover{
+a:hover{
     color: var(--font_light);
 }
 body{
@@ -272,15 +273,6 @@ main{
     background-color: var(--event_selected);
 }
 
-
-#group_list ul{
-    padding-left: 2px;
-    margin: 0 2px;
-}
-#group_list li{
-    padding: 5px 5px;
-    list-style-position: inside;
-}
 input {
     font-size: 1em;
 }
@@ -332,12 +324,24 @@ form label .caption{
 form label .caption::before{
     content: "# ";
 }
-.section{
-    cursor: pointer;
+
+#group_list ul{
+    padding-left: 2px;
+    margin: 0 2px;
 }
+#group_list li{
+    padding: 5px 5px;
+    list-style-position: inside;
+}
+
 .group{
     cursor: pointer;
+    list-style-type: circle;
     transition: all 0.3s ease-out;
+}
+/* URL表示の際に、bulletまで色が変わるのを防ぐ */
+.group::marker{
+    color: var(--font_light);
 }
 .group:hover {
     background-color: var(--bg_list_dark);
@@ -351,6 +355,9 @@ form label .caption::before{
 }
 .group_selected:hover{
     background-color: var(--bg_list_selected);
+}
+.link{
+    color: var(--font_link_blue);
 }
 .container{
     padding: 10px 5px;

@@ -33,7 +33,7 @@
     let DELETE_CONFIRMATION = "の予約を削除します。";
     const PASS_WORD = "password";
 
-    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
@@ -433,10 +433,15 @@
                         this.leftPane.push({key: name, name: name, arr: gparent, explain: explain});
                     }else if(prefix == "+"){   // フロア名など
                         if(gparent){
-                            parent = [];
                             fullName = [fullName[0], name];
-                            gparent.push({key: fullName.join("_"), name: name, arr: parent, explain: explain});
-                            fullName.push("");
+                            if(explain.match(/https?:\/\/[\w!?\/+\-_~=;.,*&@#$%()'[\]]+/)){    // URL
+                                parent = null;
+                                gparent.push({key: explain, name: name, arr: null, explain: explain});
+                            }else{
+                                parent = [];
+                                gparent.push({key: fullName.join("_"), name: name, arr: parent, explain: explain});
+                                fullName.push("");
+                            }
                         }
                     }else if(prefix == "*"){    // 装置・部屋名など
                         if(parent){
@@ -1044,6 +1049,9 @@
                     for(let j = 0; j < section.arr.length; j++){
                         const group = section.arr[j];
                         const li = document.createElement("li");
+                        if(group.key.match(/https?:\/\/[\w!?\/+\-_~=;.,*&@#$%()'[\]]+/)){   // URLの場合
+                            li.classList.add("link");
+                        }
                         li.classList.add("group");
                         li.setAttribute("data-group", group.key);
                         li.innerHTML = group.name;
@@ -1532,8 +1540,12 @@
             for(let i = 0; i < groups.length; i++){
                 const group = groups[i];
                 group.addEventListener("click", (e) => {
-                    this.controller.switchGroup(e.currentTarget.dataset.group);
-                    this.model.setLastOpenedGroup(e.currentTarget.dataset.group);
+                    if(e.currentTarget.dataset.group.match(/https?:\/\/[\w!?\/+\-_~=;.,*&@#$%()'[\]]+/)){
+                        window.open(e.currentTarget.dataset.group);
+                    }else{
+                        this.controller.switchGroup(e.currentTarget.dataset.group);
+                        this.model.setLastOpenedGroup(e.currentTarget.dataset.group);
+                    }
                 });
             }
         }
