@@ -278,6 +278,7 @@ button, form input[type="button"]{
     background-color: var(--bg_button);
     color: var(--font_light);
     padding: 5px 10px;
+    margin: 2px 5px;
     text-align: center;
     border: solid 0px var(--bg_transparent);
     border-radius: 5px;        /* 角丸指定 */

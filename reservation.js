@@ -33,7 +33,7 @@
     let DELETE_CONFIRMATION = "の予約を削除します。";
     const PASS_WORD = "password";
 
-    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
