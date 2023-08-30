@@ -18,6 +18,9 @@
 use strict;
 use CGI;
 use utf8;
+use open IN  => ":utf8";
+use open OUT => ":utf8";
+use open IO => ":utf8";
 use URI::Escape;
 use FindBin;
 # perlのバージョンが古いと、DigestとJSONが入っていない場合がある(参考: https://www.futomi.com/lecture/json.html#gsc.tab=0)。
@@ -26,9 +29,9 @@ use FindBin;
 # https://metacpan.org/pod/Digest::SHA::PurePerl
 # https://metacpan.org/pod/JSON::PP
 # そして、以下2つをコメントインし、その下にある「こっちをコメントアウト」に従う。
-# use lib "$FindBin::Bin/extlib";
-# use Digest::SHA::PurePerl qw(sha256_base64);
-use Digest::SHA qw(sha256_base64);  # こっちをコメントアウト
+use lib "$FindBin::Bin/extlib";
+use Digest::SHA::PurePerl qw(sha256_base64);
+# use Digest::SHA qw(sha256_base64);  # こっちをコメントアウト
 use JSON;
 
 # curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"fetch\",\"start\":202307120000,\"end\":202307130000,\"group\":\"建物A_1F\"}" "http://localhost/cgi-bin/reserv/perl.cgi"
