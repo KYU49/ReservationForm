@@ -45,6 +45,8 @@
     --bg_button_disabled: #c4c9cE;
     --bg_button_hover: #3c94f9;
     --bg_button_active: #0c54c9;
+    --bg_saturday: #0000ff22;
+    --bg_sunday: #ff000022;
     --border_negative_button: #1c74e999;
     --bg_negative_button_hover: #ffffff55;
     --bg_nvegative_button_active: #00000033;
@@ -176,6 +178,12 @@ main{
     border-bottom: 1px solid var(--vertical_bar_timeline);
     overflow: hidden;
     transition: height 0.1s ease-out;
+}
+.timeline_label_date.saturday{
+    background-color: var(--bg_saturday);
+}
+.timeline_label_date.sunday{
+    background-color: var(--bg_sunday);
 }
 .timeline_row div{
     box-sizing: border-box;

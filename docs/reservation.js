@@ -33,7 +33,7 @@
     let DELETE_CONFIRMATION = "の予約を削除します。";
     const PASS_WORD = "password";
 
-    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
@@ -154,6 +154,11 @@
             const d = Utility.ymd2date((ymd + "").replaceAll(/\-/g, ""));
             d.setDate(d.getDate() + offset);
             return this.dateToDayOfWeek(d, ja);
+        }
+        static ymd2DowNum(ymd, offset){
+            const d = Utility.ymd2date((ymd + "").replaceAll(/\-/g, ""));
+            d.setDate(d.getDate() + offset);
+            return d.getDay();
         }
         static dateToDayOfWeek(date, ja = false){
             const day = date.getDay();
@@ -966,6 +971,22 @@
             document.getElementById("moveToToday").addEventListener("click", (e) => {
                 this.controller.dateChanged(Utility.getTodayAsYMD(0, true));
             });
+
+            // 昨日明日ボタン
+            document.forms.currentDate.previousDay.addEventListener("click", (e) => {
+                if(this.model.isRowsOpened.includes(true)){ // 1つでも開かれている場合
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), -FOLD_DAYS, true));
+                }else{
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), -1, true));
+                }
+            });
+            document.forms.currentDate.nextDay.addEventListener("click", (e) => {
+                if(this.model.isRowsOpened.includes(true)){ // 1つでも開かれている場合
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), FOLD_DAYS, true));
+                }else{
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), 1, true));
+                }
+            });
         }
 
         // Controllerから呼び出すcallbackを設定
@@ -1032,6 +1053,19 @@
                 }
                 
                 this.initializeLeftPane();  // 左ペインの初期化
+            });
+
+            // 次の日ボタンの設定
+            this.controller.addEventListener(Controller.CONST.OPEN_ROWS, (event) => {
+                const nd = document.forms.currentDate.nextDay;
+                const pd = document.forms.currentDate.previousDay;
+                if(this.model.isRowsOpened.includes(true)){ // 1つでも開かれている場合
+                    pd.value = "<<";
+                    nd.value = ">>";
+                }else{
+                    pd.value = "<";
+                    nd.value = ">";
+                }
             });
 
             this.controller.addEventListener(Controller.CONST.REND_RIGHT_PANE, (event) => {
@@ -1439,6 +1473,19 @@
                     ele.classList.add("timeline_label_date");
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
                         ele.innerText = Utility.addOffsetToYmd(event.ymd, i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, i, true);
+                        if(ele.classList.contains("saturday")){
+                            ele.classList.remove("saturday");
+                        }
+                        if(ele.classList.contains("sunday")){
+                            ele.classList.remove("sunday");
+                        }
+                        const dow = Utility.ymd2DowNum(event.ymd, i);
+                        console.log(dow);
+                        if(dow == 0){  // 日
+                            ele.classList.add("sunday");
+                        }else if(dow == 6){  // 土
+                            ele.classList.add("saturday");
+                        }
                     });
                     timeline_row.classList.add("timeline_row_hide");
                 }
