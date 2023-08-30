@@ -73,7 +73,7 @@ html::-webkit-scrollbar {
 
 header{
     display: flex;
-    padding: 0 15px;
+    padding: 0 5px;
 
     max-height: var(--header_height);
     min-height: var(--header_height);
@@ -81,6 +81,16 @@ header{
     background: var(--bg_header);
     color: var(--font_light);
     align-items: center;
+}
+form[name="currentDate"] input{
+    display: inline-block;
+    vertical-align: middle;
+}
+.navigate_day{
+    color: var(--font_light)!important;
+    min-width: 2em;
+    padding: 3px 0!important;
+    margin: 0!important;
 }
 .github_url{
     margin-left: auto;

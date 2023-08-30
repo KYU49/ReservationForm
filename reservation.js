@@ -966,6 +966,22 @@
             document.getElementById("moveToToday").addEventListener("click", (e) => {
                 this.controller.dateChanged(Utility.getTodayAsYMD(0, true));
             });
+
+            // 昨日明日ボタン
+            document.forms.currentDate.previousDay.addEventListener("click", (e) => {
+                if(this.model.isRowsOpened.includes(true)){ // 1つでも開かれている場合
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), -FOLD_DAYS, true));
+                }else{
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), -1, true));
+                }
+            });
+            document.forms.currentDate.nextDay.addEventListener("click", (e) => {
+                if(this.model.isRowsOpened.includes(true)){ // 1つでも開かれている場合
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), FOLD_DAYS, true));
+                }else{
+                    this.controller.dateChanged(Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), 1, true));
+                }
+            });
         }
 
         // Controllerから呼び出すcallbackを設定
@@ -1032,6 +1048,19 @@
                 }
                 
                 this.initializeLeftPane();  // 左ペインの初期化
+            });
+
+            // 次の日ボタンの設定
+            this.controller.addEventListener(Controller.CONST.OPEN_ROWS, (event) => {
+                const nd = document.forms.currentDate.nextDay;
+                const pd = document.forms.currentDate.previousDay;
+                if(this.model.isRowsOpened.includes(true)){ // 1つでも開かれている場合
+                    pd.value = "<<";
+                    nd.value = ">>";
+                }else{
+                    pd.value = "<";
+                    nd.value = ">";
+                }
             });
 
             this.controller.addEventListener(Controller.CONST.REND_RIGHT_PANE, (event) => {
