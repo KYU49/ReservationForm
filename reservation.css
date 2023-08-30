@@ -94,6 +94,18 @@ header{
 .github_url a:hover{
     color: var(--font_light);
 }
+
+/* DS用で追記 */
+header a:link{
+    color: var(--font_lightred);
+}
+header a:visited{
+    color: var(--font_red);
+}
+header a:hover{
+    color: var(--font_light);
+}
+
 body{
     height: 100vh;
     /* 画面いっぱいにするため. https://qiita.com/KokiSakano/items/d73c89b9eb9b6e605c22 */

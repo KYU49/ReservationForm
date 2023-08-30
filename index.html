@@ -20,10 +20,10 @@
   <meta charset="utf-8">
   <title>予約システム</title>
   <meta name="description" content="予約システム">
-  <meta name="author" content="https://github.com/KYU49">
   <meta http-equiv="Cache-Control" content="no-store">
+  <meta name="author" content="https://github.com/KYU49">
   <link rel="stylesheet" href="reservation.css?v=1.0">
-  <script src="reservation.js"></script>
+  <script src="reservation.js?230823"></script>
 </head>
 <body>
   <header>
@@ -31,8 +31,11 @@
       <input name="date" type="date" onkeydown="return false" />  <!-- 直接入力だと、入力のたびにchangeが走るため、直接入力を禁止 -->
     </form>
     <button id="moveToToday">今日</button>
+    　<a href="https://ecots1.daiichisankyo.com/sites/1070/ResFuncMtgRm/Lists/3002F/calendar.aspx" target="_blank">会議室</a>
+    　<a href="http://pksyap01.jpn-pharm.ad.local/scripts/webhello/pc/default.asp" target="_blank">第n会議室</a>
+    　標準PCの画面では、拡大率75 %を推奨(Ctrlキーを押しながら「-」を3回)。
     <sectoin class="github_url">
-      このサービスは<a href="https://github.com/KYU49/ReservationForm" target="_blank">OSS予約表(Github)</a>を元に作られています。
+      不具合報告や追加依頼などは<a href="mailto:hibino.masaki.az@daiichisankyo.co.jp">こちら(柾)</a>まで。
     </section>
   </header>
   <main>
@@ -84,7 +87,7 @@
         <span id="warning"></span><br>
         
         <label for="outlook" class="checkbox_label"><input type="checkbox" id="outlook" name="outlook" /> Outlookカレンダーに追加</label><br>
-        <label for="google" class="checkbox_label"><input type="checkbox" id="google" name="google" /> Googleカレンダーに追加</label>
+        <label for="google" class="checkbox_label" style="display:none"><input type="checkbox" id="google" name="google" /> Googleカレンダーに追加</label>
       </form>
     </section>
   </main>

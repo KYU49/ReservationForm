@@ -327,7 +327,7 @@
         }
 
         async loadParameters(){
-            const response = await fetch("parameters.txt");
+            const response = await fetch("parameters.txt?230823");
             const responseText = await response.text();
             const parameters = responseText.replaceAll(/\/\*[.\r\n\s]*?\*\/]/g, "").split(/\r\n/);
             let fullName = [];
