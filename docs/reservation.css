@@ -45,6 +45,8 @@
     --bg_button_disabled: #c4c9cE;
     --bg_button_hover: #3c94f9;
     --bg_button_active: #0c54c9;
+    --bg_saturday: #0000ff22;
+    --bg_sunday: #ff000022;
     --border_negative_button: #1c74e999;
     --bg_negative_button_hover: #ffffff55;
     --bg_nvegative_button_active: #00000033;
@@ -73,7 +75,7 @@ html::-webkit-scrollbar {
 
 header{
     display: flex;
-    padding: 0 15px;
+    padding: 0 5px;
 
     max-height: var(--header_height);
     min-height: var(--header_height);
@@ -81,6 +83,16 @@ header{
     background: var(--bg_header);
     color: var(--font_light);
     align-items: center;
+}
+form[name="currentDate"] input{
+    display: inline-block;
+    vertical-align: middle;
+}
+.navigate_day{
+    color: var(--font_light)!important;
+    min-width: 2em;
+    padding: 3px 0!important;
+    margin: 0!important;
 }
 .github_url{
     margin-left: auto;
@@ -166,6 +178,12 @@ main{
     border-bottom: 1px solid var(--vertical_bar_timeline);
     overflow: hidden;
     transition: height 0.1s ease-out;
+}
+.timeline_label_date.saturday{
+    background-color: var(--bg_saturday);
+}
+.timeline_label_date.sunday{
+    background-color: var(--bg_sunday);
 }
 .timeline_row div{
     box-sizing: border-box;
@@ -278,6 +296,7 @@ button, form input[type="button"]{
     background-color: var(--bg_button);
     color: var(--font_light);
     padding: 5px 10px;
+    margin: 2px 5px;
     text-align: center;
     border: solid 0px var(--bg_transparent);
     border-radius: 5px;        /* 角丸指定 */

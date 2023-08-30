@@ -155,6 +155,11 @@
             d.setDate(d.getDate() + offset);
             return this.dateToDayOfWeek(d, ja);
         }
+        static ymd2DowNum(ymd, offset){
+            const d = Utility.ymd2date((ymd + "").replaceAll(/\-/g, ""));
+            d.setDate(d.getDate() + offset);
+            return d.getDay();
+        }
         static dateToDayOfWeek(date, ja = false){
             const day = date.getDay();
             if(ja){
@@ -1468,6 +1473,19 @@
                     ele.classList.add("timeline_label_date");
                     this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
                         ele.innerText = Utility.addOffsetToYmd(event.ymd, i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, i, true);
+                        if(ele.classList.contains("saturday")){
+                            ele.classList.remove("saturday");
+                        }
+                        if(ele.classList.contains("sunday")){
+                            ele.classList.remove("sunday");
+                        }
+                        const dow = Utility.ymd2DowNum(event.ymd, i);
+                        console.log(dow);
+                        if(dow == 0){  // 日
+                            ele.classList.add("sunday");
+                        }else if(dow == 6){  // 土
+                            ele.classList.add("saturday");
+                        }
                     });
                     timeline_row.classList.add("timeline_row_hide");
                 }
