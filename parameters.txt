@@ -35,8 +35,9 @@
 * ベンチD (B隣)
 
 # 外部リンク
-+ 会議室予約{https://ecots1.daiichisankyo.com/sites/1070/ResFuncMtgRm/Lists/3002F/calendar.aspx}
++ 薬理系会議室{https://ecots1.daiichisankyo.com/sites/1070/ResFuncMtgRm/Lists/3002F/calendar.aspx}
 + 第n会議室{http://pksyap01.jpn-pharm.ad.local/scripts/webhello/pc/default.asp}
++ 600号会議室{http://admetus.jpn-pharm.ad.local/cgi-bin/reserve/600/index.pl}
 
 - 名前,name,*+
 - 備考,domain,+
