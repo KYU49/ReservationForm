@@ -34,7 +34,7 @@
     let ERROR_TIME = "開始時間と終了時間が逆転しています。";
     const PASS_WORD = "password";
 
-    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
@@ -1175,7 +1175,7 @@
                 const events = event.events;
                 const timelineRows = document.getElementsByClassName("timeline_rows");
                 const maxLength = (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN;  // 左から右までの最大長
-
+                
                 for (let i = 0; i < events.length; i++){    // events内のデータを順に取得
                     const ev = events[i];
                     let startCellNum = Utility.time2cell(Utility.ymdhm2date(ev.start), this.model.currentDate);      // 予約開始時間のセルを取得
@@ -1186,13 +1186,6 @@
                         continue;
                     }
                     const targetRow = timelineRows[rowNum];  // どの部屋・装置か
-                    
-                    // 日付を変更した場合などに、前回のデータが残っている可能性があるため、全て除く。
-                    const timelineEvents = targetRow.getElementsByClassName("timeline_event");
-                    
-                    for(let i = timelineEvents.length - 1; i >= 0; i--){
-                        timelineEvents[i].remove();
-                    }
                     const targetCells = targetRow.getElementsByClassName("timeline_cell");  // 対象の部屋・装置のcellを全て取得
 
                     for(let j = 0; j < FOLD_DAYS; j++){
@@ -1205,7 +1198,11 @@
                         if(startCellNum < firstCellNum){  // 画面上に表示されない位置の予定でも、終わりが画面上に表示されるのであれば、0の位置に入れる
                             startCellNum = firstCellNum;
                         }
+                        // 前の予定が残っていた場合は削除(同じセルに2つの予定は入らない)
                         const parentCell = targetCells[startCellNum];
+                        while(parentCell.lastChild){
+                            parentCell.lastChild.remove();
+                        }
                         parentCell.appendChild(ele);
                     }
                 }
