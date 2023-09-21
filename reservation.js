@@ -892,6 +892,8 @@
         }
 
         async saveEvent(){
+            //FIXME 始まりと終わりが逆になっていた場合、ここで警告を出してストップ。
+
             this.model.storeName();
             this.dispatchEvent({type: Controller.CONST.NOW_LOADING_START}); // endはreloadTimelineで呼ばれる
             const resultJson = await this.model.saveEventFetch();
@@ -1312,7 +1314,7 @@
                 return null;
             }
 
-            ele.style.width = "calc(" + eventLength * 100 + "% + " + eventLength + "px)";   // cellのboader分だけここで足している。
+            ele.style.width = "calc(" + eventLength * 100 + "% + " + (eventLength / 2) + "px)";   // cellのboader分だけここで足している。
             const id = ev.eventId;
             ele.classList.add(View.CONST.ID_PREFIX + id);   // 数日にまたがるイベントを取得するために、同じ予定には同じclassを指定する。
             ele.dataset.eventId = id;
@@ -1455,7 +1457,7 @@
                     ele.innerHTML = name;
                     // 説明文を無理やり取得
                     const explain = this.model.rowsExplain[this.model.rowsName.indexOf(name)];
-                    ele.title = name + ": " + explain;
+                    ele.title = name + ": " + explain;  //FIXME 画像の表示に対応する
                     ele.classList.add("timeline_label");
                     this.model.isRowsOpened.push(false);
                     ele.addEventListener("click", (event) => {
@@ -1648,6 +1650,8 @@
             }
             if(this.selecting >= 0){
                 event.preventDefault();
+                //FXIME 既存の予定の上にカーソルが入ると、fromがイベントの最初の時間になってしまう。eventが貫通するように変更したい。
+
                 // hoverとdownのタイミングで右ペインに反映
                 let from = this.selecting;
                 let to = this.getSelectedCellNumber(event);
