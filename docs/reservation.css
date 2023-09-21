@@ -54,7 +54,8 @@
     --font_form_highlighted: #ab1c23;
     --bar_form: #ccbbbb;
     --event_selected: #f4a9ae;
-    --row_height: 7ex;
+    --row_event_space: 10px; /* eventの下を少し空けることで選択しやすく */
+    --row_height: calc(7ex + var(--row_event_space));
     --header_height: 50px;
 }
 *{
@@ -171,6 +172,10 @@ main{
     width: 100%;
     border-bottom: 2px solid var(--underbar_row_sep);
 }
+.timeline_rows_html{
+    width: 100%;
+    border-bottom: 2px solid var(--underbar_row_sep);
+}
 .timeline_row{
     display: flex;
     justify-content: space-between;
@@ -259,7 +264,7 @@ main{
     overflow: hidden;
     background-color: var(--bg_timeline_event);
     border-left: 2px solid var(--vertical_bar_event);
-    height: 100%;
+    height: calc(100% - var(--row_event_space));
     cursor: pointer;
     box-sizing: border-box;
 }
