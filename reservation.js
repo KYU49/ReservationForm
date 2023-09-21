@@ -882,6 +882,8 @@
             this.dispatchEvent({type: Controller.CONST.NOW_LOADING_START});
             const resultJson = await this.model.loadEventsFetch(dayOffsetStart, dayOffsetEnd, group);
             console.log("Fetched Events:", resultJson);
+            
+            this.model.events.splice(0);    // 古い予定を削除
             // JSONで取得した予定リストから、1つずつ予定を読み込む
             for(let i = 0; i < resultJson.length; i++){
                 const id = resultJson[i].eventId;
@@ -1176,6 +1178,12 @@
                 const timelineRows = document.getElementsByClassName("timeline_rows");
                 const maxLength = (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN;  // 左から右までの最大長
                 
+                // 日付を変更した場合などに、前回のデータが残っている可能性があるため、全て除く。
+                const timelineEvents = document.getElementsByClassName("timeline_event");
+                for(let i = timelineEvents.length - 1; i >= 0; i--){
+                    timelineEvents[i].remove();
+                }
+
                 for (let i = 0; i < events.length; i++){    // events内のデータを順に取得
                     const ev = events[i];
                     let startCellNum = Utility.time2cell(Utility.ymdhm2date(ev.start), this.model.currentDate);      // 予約開始時間のセルを取得
@@ -1200,9 +1208,6 @@
                         }
                         // 前の予定が残っていた場合は削除(同じセルに2つの予定は入らない)
                         const parentCell = targetCells[startCellNum];
-                        while(parentCell.lastChild){
-                            parentCell.lastChild.remove();
-                        }
                         parentCell.appendChild(ele);
                     }
                 }
