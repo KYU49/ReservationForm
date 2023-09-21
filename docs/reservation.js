@@ -34,7 +34,7 @@
     let ERROR_TIME = "開始時間と終了時間が逆転しています。";
     const PASS_WORD = "password";
 
-    const isDebug = true;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
+    const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
 
 
     // start, end: Date Object; startYmd: 20230703; startHM: 1720; from: セル番号
