@@ -31,6 +31,7 @@
     let MESSAGE_REQUIRED = "は必須です。";    // 入力必須項目に記載される文言(hogehoge MESSAGE_REQUIREDとなる); 英語とかなら"is/are required."にすればよい。
     let SERVER_ERROR = "サーバーとの通信でエラーが発生しました。";
     let DELETE_CONFIRMATION = "の予約を削除します。";
+    let ERROR_TIME = "開始時間と終了時間が逆転しています。";
     const PASS_WORD = "password";
 
     const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
@@ -447,6 +448,11 @@
                         if(parent){
                             fullName[2] = name;
                             parent.push({key: fullName.join("_"), name: name, explain: explain});
+                        }
+                    }else if(prefix == "%"){    // 画像ねじ込み
+                        if(parent){
+                            fullName[2] = name;
+                            parent.push({key: fullName.join("_"), name: "html:" + name, explain: explain});
                         }
                     }
                 }
@@ -892,6 +898,12 @@
         }
 
         async saveEvent(){
+            //FIXME 始まりと終わりが逆になっていた場合、ここで警告を出してストップ。
+            if(this.model.currentEvent.start > this.model.currentEvent.end){
+                this.dispatchEvent({type: Model.CONST.TOAST, text: ERROR_TIME});
+                return;
+            }
+
             this.model.storeName();
             this.dispatchEvent({type: Controller.CONST.NOW_LOADING_START}); // endはreloadTimelineで呼ばれる
             const resultJson = await this.model.saveEventFetch();
@@ -1133,10 +1145,12 @@
                     // 行の描画処理
                     this.rendRows(row);
                     // 右ペイン上部の切り替え作成
-                    let op = document.createElement("option");
-                    op.value = row;
-                    op.innerText = row;
-                    rowsForm.appendChild(op);
+                    if(!row.startsWith("html:")){
+                        let op = document.createElement("option");
+                        op.value = row;
+                        op.innerText = row;
+                        rowsForm.appendChild(op);
+                    }
                     // 選択の復元
                     if(row == this.model.currentEvent.row){
                         rowsForm.value = row;
@@ -1162,11 +1176,6 @@
                 const timelineRows = document.getElementsByClassName("timeline_rows");
                 const maxLength = (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN;  // 左から右までの最大長
 
-                // 日付を変更した場合などに、前回のデータが残っている可能性があるため、全て除く。
-                const timelineEvents = document.getElementsByClassName("timeline_event");
-                for(let i = timelineEvents.length - 1; i >= 0; i--){
-                    timelineEvents[i].remove();
-                }
                 for (let i = 0; i < events.length; i++){    // events内のデータを順に取得
                     const ev = events[i];
                     let startCellNum = Utility.time2cell(Utility.ymdhm2date(ev.start), this.model.currentDate);      // 予約開始時間のセルを取得
@@ -1177,6 +1186,13 @@
                         continue;
                     }
                     const targetRow = timelineRows[rowNum];  // どの部屋・装置か
+                    
+                    // 日付を変更した場合などに、前回のデータが残っている可能性があるため、全て除く。
+                    const timelineEvents = targetRow.getElementsByClassName("timeline_event");
+                    
+                    for(let i = timelineEvents.length - 1; i >= 0; i--){
+                        timelineEvents[i].remove();
+                    }
                     const targetCells = targetRow.getElementsByClassName("timeline_cell");  // 対象の部屋・装置のcellを全て取得
 
                     for(let j = 0; j < FOLD_DAYS; j++){
@@ -1312,7 +1328,7 @@
                 return null;
             }
 
-            ele.style.width = "calc(" + eventLength * 100 + "% + " + eventLength + "px)";   // cellのboader分だけここで足している。
+            ele.style.width = "calc(" + eventLength * 100 + "% + " + (eventLength / 2) + "px)";   // cellのboader分だけここで足している。
             const id = ev.eventId;
             ele.classList.add(View.CONST.ID_PREFIX + id);   // 数日にまたがるイベントを取得するために、同じ予定には同じclassを指定する。
             ele.dataset.eventId = id;
@@ -1443,82 +1459,88 @@
         rendRows(name){
             const timeline_main = document.getElementById("timeline_main");
             const timeline_rows = document.createElement("div");
-            timeline_rows.classList.add("timeline_rows");
-            for(let i = 0; i < FOLD_DAYS; i++){
-                const timeline_row = document.createElement("div");
-                timeline_row.classList.add("timeline_row");
 
-                // 1つ目は部屋名などが入る太めの部分
-                const ele = document.createElement("div");
-                // 2行目からは同一の部屋の翌日以降のタイムライン
-                if(i == 0){
-                    ele.innerHTML = name;
-                    // 説明文を無理やり取得
-                    const explain = this.model.rowsExplain[this.model.rowsName.indexOf(name)];
-                    ele.title = name + ": " + explain;
-                    ele.classList.add("timeline_label");
-                    this.model.isRowsOpened.push(false);
-                    ele.addEventListener("click", (event) => {
-                        let rows = event.currentTarget.parentElement.parentElement;
-                        let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
-                        this.controller.openRows(rowNums, !this.model.isRowsOpened[rowNums]);
-                        if(this.model.isRowsOpened[rowNums]){
-                            event.currentTarget.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true) + "<br>" + name;
-                        }else{
-                            event.currentTarget.innerHTML = name;
-                        }
-                    });
-                    this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
-                        let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(timeline_rows);
-                        if(this.model.isRowsOpened[rowNums]){
-                            ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, 0, true) + "<br>" + name;
-                        }else{
-                            ele.innerHTML = name;
-                        }
-                    });
-                }else{
-                    ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);                    
-                    const dow = Utility.ymd2DowNum(Utility.date2ymd(this.model.currentDate), i);
-                    if(dow == 0){  // 日
-                        ele.classList.add("sunday");
-                    }else if(dow == 6){  // 土
-                        ele.classList.add("saturday");
-                    }
-                    ele.classList.add("timeline_label_date");
-                    this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
-                        ele.innerText = Utility.addOffsetToYmd(event.ymd, i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, i, true);
-                        if(ele.classList.contains("saturday")){
-                            ele.classList.remove("saturday");
-                        }
-                        if(ele.classList.contains("sunday")){
-                            ele.classList.remove("sunday");
-                        }
-                        const dow = Utility.ymd2DowNum(event.ymd, i);
+            if(name.startsWith("html:")){    // 画像など描画
+                timeline_rows.innerHTML = name.replace("html:", "");
+                timeline_rows.classList.add("timeline_rows_html");
+            }else{
+                timeline_rows.classList.add("timeline_rows");
+                for(let i = 0; i < FOLD_DAYS; i++){
+                    const timeline_row = document.createElement("div");
+                    timeline_row.classList.add("timeline_row");
+
+                    // 1つ目は部屋名などが入る太めの部分
+                    const ele = document.createElement("div");
+                    // 2行目からは同一の部屋の翌日以降のタイムライン
+                    if(i == 0){
+                        ele.innerHTML = name;
+                        // 説明文を無理やり取得
+                        const explain = this.model.rowsExplain[this.model.rowsName.indexOf(name)];
+                        ele.title = name + ": " + explain;
+                        ele.classList.add("timeline_label");
+                        this.model.isRowsOpened.push(false);
+                        ele.addEventListener("click", (event) => {
+                            let rows = event.currentTarget.parentElement.parentElement;
+                            let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
+                            this.controller.openRows(rowNums, !this.model.isRowsOpened[rowNums]);
+                            if(this.model.isRowsOpened[rowNums]){
+                                event.currentTarget.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true) + "<br>" + name;
+                            }else{
+                                event.currentTarget.innerHTML = name;
+                            }
+                        });
+                        this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
+                            let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(timeline_rows);
+                            if(this.model.isRowsOpened[rowNums]){
+                                ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, 0, true) + "<br>" + name;
+                            }else{
+                                ele.innerHTML = name;
+                            }
+                        });
+                    }else{
+                        ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);                    
+                        const dow = Utility.ymd2DowNum(Utility.date2ymd(this.model.currentDate), i);
                         if(dow == 0){  // 日
                             ele.classList.add("sunday");
                         }else if(dow == 6){  // 土
                             ele.classList.add("saturday");
                         }
-                    });
-                    timeline_row.classList.add("timeline_row_hide");
-                }
-                timeline_row.appendChild(ele);
-                for(let j = START_TIME; j <= END_TIME; j++){
-                    for(let k = 0; k < 60 / SMALLEST_MIN; k++){ // 30 minごと
-                        const cell = document.createElement("div");
-                        cell.classList.add("timeline_cell");
-                        cell.style.zIndex = (END_TIME + 1) * Math.floor(60 / SMALLEST_MIN) - j * Math.floor(60 / SMALLEST_MIN) - k;
-                        cell.addEventListener("mousedown", (event) => this.selector.mousedown(event));
-                        cell.addEventListener("mouseup", (event) => this.selector.mouseup(event));
-                        cell.addEventListener("mouseenter", (event) => this.selector.mousehover(event));
-                        cell.addEventListener("mousemove", (event) => this.selector.mousemove(event));
-                        cell.addEventListener("dragover", (event) => this.dragSelector.dragover(event));  // drop可能にする
-                        cell.addEventListener("dragleave", (event) => this.dragSelector.dragleave(event));  // drop可能にする
-                        cell.addEventListener("drop", (event) => this.dragSelector.drop(event));  // drop可能にする
-                        timeline_row.appendChild(cell);
+                        ele.classList.add("timeline_label_date");
+                        this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
+                            ele.innerText = Utility.addOffsetToYmd(event.ymd, i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, i, true);
+                            if(ele.classList.contains("saturday")){
+                                ele.classList.remove("saturday");
+                            }
+                            if(ele.classList.contains("sunday")){
+                                ele.classList.remove("sunday");
+                            }
+                            const dow = Utility.ymd2DowNum(event.ymd, i);
+                            if(dow == 0){  // 日
+                                ele.classList.add("sunday");
+                            }else if(dow == 6){  // 土
+                                ele.classList.add("saturday");
+                            }
+                        });
+                        timeline_row.classList.add("timeline_row_hide");
                     }
+                    timeline_row.appendChild(ele);
+                    for(let j = START_TIME; j <= END_TIME; j++){
+                        for(let k = 0; k < 60 / SMALLEST_MIN; k++){ // 30 minごと
+                            const cell = document.createElement("div");
+                            cell.classList.add("timeline_cell");
+                            cell.style.zIndex = (END_TIME + 1) * Math.floor(60 / SMALLEST_MIN) - j * Math.floor(60 / SMALLEST_MIN) - k;
+                            cell.addEventListener("mousedown", (event) => this.selector.mousedown(event));
+                            cell.addEventListener("mouseup", (event) => this.selector.mouseup(event));
+                            cell.addEventListener("mouseenter", (event) => this.selector.mousehover(event));
+                            cell.addEventListener("mousemove", (event) => this.selector.mousemove(event));
+                            cell.addEventListener("dragover", (event) => this.dragSelector.dragover(event));  // drop可能にする
+                            cell.addEventListener("dragleave", (event) => this.dragSelector.dragleave(event));  // drop可能にする
+                            cell.addEventListener("drop", (event) => this.dragSelector.drop(event));  // drop可能にする
+                            timeline_row.appendChild(cell);
+                        }
+                    }
+                    timeline_rows.appendChild(timeline_row);
                 }
-                timeline_rows.appendChild(timeline_row);
             }
             timeline_main.appendChild(timeline_rows);
         }
@@ -1648,6 +1670,8 @@
             }
             if(this.selecting >= 0){
                 event.preventDefault();
+                //FXIME 既存の予定の上にカーソルが入ると、fromがイベントの最初の時間になってしまう。eventが貫通するように変更したい。
+
                 // hoverとdownのタイミングで右ペインに反映
                 let from = this.selecting;
                 let to = this.getSelectedCellNumber(event);
@@ -1678,7 +1702,7 @@
             // 予約項目の入った行を別日の入った行と共に内包するtimeline_rowsを取得
             let rows = event.currentTarget.parentElement.parentElement;
             // 現在の予約項目が何番目か
-            return [].slice.call(document.getElementById("timeline_main").children).indexOf(rows);
+            return [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
         }
         getSelectedCellNumber(event){   // rows内で何番目か。全ての中ではない
             // 予約項目の入った行を別日の入った行と共に内包するtimeline_rowsを取得
@@ -1755,7 +1779,7 @@
             // 予約項目の入った行を別日の入った行と共に内包するtimeline_rowsを取得
             let rows = event.currentTarget.parentElement.parentElement;
             // 現在の予約項目が何番目か
-            return [].slice.call(document.getElementById("timeline_main").children).indexOf(rows);
+            return [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
         }
         getSelectedCellNumber(event){   // rows内で何番目か。全ての中ではない
             // 予約項目の入った行を別日の入った行と共に内包するtimeline_rowsを取得
