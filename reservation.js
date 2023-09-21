@@ -1330,7 +1330,7 @@
                 return null;
             }
 
-            ele.style.width = "calc(" + eventLength * 100 + "% + " + (eventLength / 2) + "px)";   // cellのboader分だけここで足している。
+            ele.style.width = "calc(" + eventLength * 100 + "% + " + (eventLength * 4 / 5) + "px)";   // cellのboader分だけここで足している。
             const id = ev.eventId;
             ele.classList.add(View.CONST.ID_PREFIX + id);   // 数日にまたがるイベントを取得するために、同じ予定には同じclassを指定する。
             ele.dataset.eventId = id;
