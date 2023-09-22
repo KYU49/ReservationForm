@@ -238,6 +238,7 @@
             this.currentDate = new Date();
             this.reservationValuesBackup = {};  // 右ペインのテキスト入力項目について、イベント選択時に既に入力されている内容を保存するため
             this.rowsName = [];
+            this.rowsNameWoHtml = [];
             this.rowsExplain = [];
             this.events = [];   // [0: [{eventId: , row: 行の名前, row0の予定0のstart: , row0の予定0のend: , others: {}...}, {}, ], 1: [{}, {}], 2: [{}, {}]]
             this.isRowsOpened = []; // 明日以降の予定が表示されているか
@@ -254,7 +255,7 @@
             for(let i = 0; i < this.events.length; i++){
                 const event = this.events[i];
                 if(event.eventId == id){
-                    return [this.rowsName.indexOf(event.row), event];
+                    return [this.rowsNameWoHtml.indexOf(event.row), event];
                 }
             }
             return [-1, null];
@@ -586,7 +587,7 @@
 
         // 左ペーンの配列から指定したGroupの機器/部屋リストを取得
         // leftPane: [{key: "hoge", name: "hoge" , arr: [{key: "hoge_fuga", name: "huga", arr: ["装置1", "装置2"]}, {}]}, ]
-        getRowsInGroup(groupName){
+        getRowsInGroup(groupName, woHtml = false){
             const rowsName = [];
             for(let i in this.leftPane){
                 const gparent = this.leftPane[i];
@@ -594,7 +595,9 @@
                     const parent = gparent.arr[j];
                     if(parent.key == groupName){
                         for(let k in parent.arr){
-                            rowsName.push(parent.arr[k].name);
+                            if(!woHtml || !parent.arr[k].name.startsWith("html:")){
+                                rowsName.push(parent.arr[k].name);
+                            }
                         }
                     }
                 }
@@ -770,7 +773,7 @@
             // Date Objectに変換
             let start = Utility.cell2time(from, this.model.currentDate, false);
             let end = Utility.cell2time(to, this.model.currentDate, true);
-            this.model.setReservationRow(this.model.rowsName[rows]);
+            this.model.setReservationRow(this.model.rowsNameWoHtml[rows]);
             this.model.setReservationDate(start, end);
         }
 
@@ -812,7 +815,7 @@
                 const value = event.others[key];
                 this.model.setReservationTextContent(key, value);
             }
-            this.model.setReservationRow(this.model.rowsName[rowNum]);
+            this.model.setReservationRow(this.model.rowsNameWoHtml[rowNum]);
             this.model.setReservationDate(start, end);
             this.model.enterChangeMode(id);
             this.unselectCell();
@@ -856,10 +859,11 @@
         // 左ペインクリックや初回起動時(Rowのデータの変更が入る)
         switchGroup(groupName){
             this.model.rowsName = this.model.getRowsInGroup(groupName);
+            this.model.rowsNameWoHtml = this.model.getRowsInGroup(groupName, true);
             this.model.rowsExplain = this.model.getRowsExplainInGroup(groupName);
             if(this.model.currentGroup != groupName || this.model.isRowsOpened.length == 0){   // 現在のGroupが再選択された場合(日付変更など)は開いているrowを閉じない。isRowOpenedは初期化時なら空なので、初期化タイミングでも実施。
-                this.model.isRowsOpened = Array(this.model.rowsName.length).fill(false);
-                this.model.currentEvent.row = this.model.rowsName[0];
+                this.model.isRowsOpened = Array(this.model.rowsNameWoHtml.length).fill(false);
+                this.model.currentEvent.row = this.model.rowsNameWoHtml[0];
             }
             this.model.currentGroup = groupName;
 
@@ -1161,7 +1165,7 @@
             });
             this.controller.addEventListener(Controller.CONST.RESTORE_SELECT, () => {
                 this.selector_rend(
-                    this.model.rowsName.indexOf(this.model.currentEvent.row),
+                    this.model.rowsNameWoHtml.indexOf(this.model.currentEvent.row),
                     Utility.time2cell(this.model.reservationStart, this.model.currentDate),
                     Utility.time2cell(this.model.reservationEnd, this.model.currentDate) - 1
                 );
@@ -1188,7 +1192,7 @@
                     const ev = events[i];
                     let startCellNum = Utility.time2cell(Utility.ymdhm2date(ev.start), this.model.currentDate);      // 予約開始時間のセルを取得
                     const endCellNum = Utility.time2cell(Utility.ymdhm2date(ev.end), this.model.currentDate);   // 予約終了時間のセルを取得
-                    const rowNum = this.model.rowsName.indexOf(ev.row);
+                    const rowNum = this.model.rowsNameWoHtml.indexOf(ev.row);
                     // 該当する部屋・機器が存在しない場合
                     if(rowNum == -1){
                         continue;
@@ -1477,7 +1481,7 @@
                     if(i == 0){
                         ele.innerHTML = name;
                         // 説明文を無理やり取得
-                        const explain = this.model.rowsExplain[this.model.rowsName.indexOf(name)];
+                        const explain = this.model.rowsExplain[this.model.rowsNameWoHtml.indexOf(name)];
                         ele.title = name + ": " + explain;
                         ele.classList.add("timeline_label");
                         this.model.isRowsOpened.push(false);
@@ -1734,7 +1738,7 @@
             if(!cEvent){
                 return;
             }
-            this.rowNumBackup = this.view.model.rowsName.indexOf(cEvent.row);
+            this.rowNumBackup = this.view.model.rowsNameWoHtml.indexOf(cEvent.row);
             this.eventId = cEvent.eventId;
             this.toBackup = Utility.time2cell(Utility.ymdhm2date(cEvent.end), this.view.model.currentDate);
             this.fromBackup = Utility.time2cell(Utility.ymdhm2date(cEvent.start), this.view.model.currentDate)
