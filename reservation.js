@@ -409,13 +409,26 @@
                             break;
                     }
                 }else{
-                    const name = row.match(/(?<=.\s+)[^\[\{]+/)?.[0]; // 名前の部分
-                    const suffix = row.match(/(?<=\[).*?(?=\])/)?.[0];   // カッコ内の文字を取得
-                    let explain = row.match(/(?<=\{).*?(?=\})/)?.[0];   // カッコ内の文字を取得
+                    const name = row.match(/(?<=.\s+)[^\[\{]+/)?.[0];       // 名前の部分
+                    const suffix = row.match(/(?<=\[).*?(?=\])/)?.[0];      // []内の文字を取得
+                    const suffixInv = row.match(/(?<=\[\^).*?(?=\])/)?.[0];   // [^]内の文字を取得
+                    let explain = row.match(/(?<=\{).*?(?=\})/)?.[0];       // {}内の文字を取得
                     
                     // 特定の条件でのみ表示する場合はここで早期continue
                     if(suffix){
                         if(!location.search.includes(suffix)){
+                            if(prefix == "#"){  // 中身も全て特定条件表示にするため。
+                                gparent = null;
+                                parent = null;
+                            }
+                            if(prefix == "+"){
+                                parent = null;
+                            }
+                            continue;
+                        }
+                    }
+                    if(suffixInv){
+                        if(location.search.includes(suffixInv)){
                             if(prefix == "#"){  // 中身も全て特定条件表示にするため。
                                 gparent = null;
                                 parent = null;
