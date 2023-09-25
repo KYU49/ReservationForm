@@ -410,12 +410,12 @@
                     }
                 }else{
                     const name = row.match(/(?<=.\s+)[^\[\{]+/)?.[0];       // 名前の部分
-                    const suffix = row.match(/(?<=\[).*?(?=\])/)?.[0];      // []内の文字を取得
+                    const suffix = row.match(/(?<=\[)[^\^].*?(?=\])/)?.[0];      // []内の文字を取得(ただし、^は含まない)
                     const suffixInv = row.match(/(?<=\[\^).*?(?=\])/)?.[0];   // [^]内の文字を取得
                     let explain = row.match(/(?<=\{).*?(?=\})/)?.[0];       // {}内の文字を取得
                     
                     // 特定の条件でのみ表示する場合はここで早期continue
-                    if(suffix && !suffix.startsWith("^")){
+                    if(suffix){
                         if(!location.search.includes(suffix)){
                             if(prefix == "#"){  // 中身も全て特定条件表示にするため。
                                 gparent = null;
