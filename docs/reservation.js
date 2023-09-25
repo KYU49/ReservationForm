@@ -415,7 +415,7 @@
                     let explain = row.match(/(?<=\{).*?(?=\})/)?.[0];       // {}内の文字を取得
                     
                     // 特定の条件でのみ表示する場合はここで早期continue
-                    if(suffix){
+                    if(suffix && !suffix.startsWith("^")){
                         if(!location.search.includes(suffix)){
                             if(prefix == "#"){  // 中身も全て特定条件表示にするため。
                                 gparent = null;
