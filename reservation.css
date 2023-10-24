@@ -361,6 +361,36 @@ form label .caption::before{
 .group_selected:hover{
     background-color: var(--bg_list_selected);
 }
+
+details{
+    cursor: pointer;
+    margin-top: 5px;
+    margin-left: 2px;
+}
+details>summary {
+    list-style-type: none;
+}
+/* 閉じた状態の矢印描画 */
+details>summary::before {
+    display: inline-block;
+    content: ">";
+    color: var(--font_lightgray);
+    font-size: smaller;
+    margin-left: 5px;
+    margin-right: 5px;
+    transform: scale(2, 1) rotate(90deg);
+}
+/*開いた状態の矢印描画*/
+details[open]>summary::before {
+    display: inline-block;
+    content: "<";
+    color: var(--font_lightgray);
+    font-size: smaller;
+    margin-left: 5px;
+    margin-right: 5px;
+    transform: scale(2, 1) rotate(90deg);
+}
+
 .link{
     color: var(--font_link_blue);
 }
