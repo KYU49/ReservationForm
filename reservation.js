@@ -173,6 +173,26 @@
             const inputs = document.getElementsByTagName("input");
             return Array.from(inputs).filter((e) => type.includes(e.type));
         }
+
+        // セキュリティ完全無視で、単に文字列を短くする目的だけで使うこと。
+        static simpleHash(str){
+            let hash = 0;
+            
+            // 文字列をバイト配列に変換
+            for (let i = 0; i < str.length; i++) {
+                const charCode = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + charCode;
+                hash = hash & hash; // 32ビット符号なし整数に変換
+            }
+            
+            // バイト配列を16進数の文字列に変換
+            let hex = '';
+            for (let i = 0; i < 4; i++) {
+                const byte = (hash >>> (i * 8)) & 0xff;
+                hex += byte.toString(16).padStart(2, '0');
+            }
+            return hex;
+        }
     }
 
     // ViewでaddEventListnerなどを記述した際は、EventDispatcherにcallbackをつけて登録する。クリックイベントなどをトリガーにDispatcherを介して、Controllerが呼び出され、ControllerがModelのメソッドを呼び出し、結果がcallback関数に渡される。
@@ -587,7 +607,7 @@
         // 左ペインの前回開いたページのdata-group値を取得
         getLastOpenedGroup(){
             if(window.localStorage){
-                const lastOpenedGroup = window.localStorage.getItem(Model.CONST.LAST_OPENED_GROUP);
+                const lastOpenedGroup = window.localStorage.getItem(Model.CONST.LAST_OPENED_GROUP + Utility.simpleHash(location.pathname));
                 if(lastOpenedGroup){
                     return lastOpenedGroup;
                 }
@@ -595,7 +615,7 @@
             return null;
         }
         setLastOpenedGroup(groupName){
-            window.localStorage.setItem(Model.CONST.LAST_OPENED_GROUP, groupName);
+            window.localStorage.setItem(Model.CONST.LAST_OPENED_GROUP + Utility.simpleHash(location.pathname), groupName);
         }
 
         // 左ペーンの配列から指定したGroupの機器/部屋リストを取得

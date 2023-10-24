@@ -470,7 +470,7 @@ form label .caption::before{
 }
 #toast.active{
     opacity: 1;
-    pointer-events: auto;
+    /*pointer-events: auto;*/
 }
 
 #mouseStalker{
