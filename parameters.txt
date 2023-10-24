@@ -37,6 +37,7 @@
 # 外部リンク
 + 薬理系会議室{https://ecots1.daiichisankyo.com/sites/1070/ResFuncMtgRm/Lists/3002F/calendar.aspx}
 + 第n会議室{http://pksyap01.jpn-pharm.ad.local/scripts/webhello/pc/default.asp}
++ 280号館 動物実験施設 予約表{http://10.208.40.29/frl/reserv_280/index.html}
 + 600号会議室{http://admetus.jpn-pharm.ad.local/cgi-bin/reserve/600/index.pl}
 + リンク集{http://10.208.40.29/frl/link_collection/index.html?DRL3}
 
