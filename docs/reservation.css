@@ -376,7 +376,7 @@ details>summary::after {
     content: ">";
     color: var(--font_lightgray);
     font-size: smaller;
-    margin-left: 5px;
+    margin-left: 10px;
     transform: scale(2, 1) rotate(90deg);
 }
 /*開いた状態の矢印描画*/
@@ -385,7 +385,7 @@ details[open]>summary::after {
     content: "<";
     color: var(--font_lightgray);
     font-size: smaller;
-    margin-left: 5px;
+    margin-left: 10px;
     transform: scale(2, 1) rotate(90deg);
 }
 
