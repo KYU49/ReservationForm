@@ -1090,11 +1090,28 @@
 
                 for(let i = 0; i < roomList.length; i++) {
                     const section = roomList[i];
-                    const eleSection = document.createElement("li");
-                    eleSection.classList.add("section");
-                    eleSection.innerHTML = section.name;
+                    const eleSection = document.createElement("details");
+                    eleSection.addEventListener("toggle", (event) => {
+                        if(event.target.open){
+                            localStorage.setItem(section.key + Utility.simpleHash(location.pathname), 1);
+                        }else{
+                            localStorage.setItem(section.key + Utility.simpleHash(location.pathname), 0);
+                        }
+                    });
+                    if(localStorage.getItem(section.key + Utility.simpleHash(location.pathname)) != 0){
+                        eleSection.open = true;
+                    }else{
+                        eleSection.open = false;
+                    }
+                    const eleSectionSummary = document.createElement("summary");
+                    eleSectionSummary.innerHTML = section.name;
+                    eleSection.appendChild(eleSectionSummary);
+
                     eleSection.title = section.name + ": " + section.explain;
-                    eleSection.appendChild(document.createElement("ul"));
+
+                    //TODO 開閉機能
+                    const roomUl = document.createElement("ul");
+                    eleSection.appendChild(roomUl);
                     eleContainer.appendChild(eleSection);
 
                     for(let j = 0; j < section.arr.length; j++){
@@ -1107,7 +1124,7 @@
                         li.setAttribute("data-group", group.key);
                         li.innerHTML = group.name;
                         li.title = group.name + ": " + group.explain;
-                        eleSection.lastChild.appendChild(li);
+                        roomUl.appendChild(li);
                     }
                 }
                 
