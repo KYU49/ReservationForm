@@ -368,26 +368,24 @@ details{
     margin-left: 2px;
 }
 details>summary {
-    list-style-type: none;
+    list-style-type: disc;
 }
 /* 閉じた状態の矢印描画 */
-details>summary::before {
+details>summary::after {
     display: inline-block;
     content: ">";
     color: var(--font_lightgray);
     font-size: smaller;
     margin-left: 5px;
-    margin-right: 5px;
     transform: scale(2, 1) rotate(90deg);
 }
 /*開いた状態の矢印描画*/
-details[open]>summary::before {
+details[open]>summary::after {
     display: inline-block;
     content: "<";
     color: var(--font_lightgray);
     font-size: smaller;
     margin-left: 5px;
-    margin-right: 5px;
     transform: scale(2, 1) rotate(90deg);
 }
 
