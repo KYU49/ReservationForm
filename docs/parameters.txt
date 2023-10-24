@@ -89,4 +89,4 @@ $START_TIME = 8
 $END_TIME = 20
 $FOLD_DAYS = 7
 $SMALLEST_MIN = 30
-$DATABASE_URL = /cgi-bin/reserv/perl.cgi
+$DATABASE_URL = https://script.google.com/macros/s/AKfycbxW9gidpC09rtSFu6zkB4udgJkkEt5VKQ6FNfwqcEhYHqy8uwJ2uZv52EKITlDoo8qU/exec
