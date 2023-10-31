@@ -24,7 +24,7 @@
   <script>
     // IE弾き
     var userAgent = window.navigator.userAgent.toLowerCase();
-    if(userAgent.includes("msie") || userAgent.indexOf("trident") != -1) {
+    if(userAgent.indexOf("msie") != -1 || userAgent.indexOf("trident") != -1) {
       window.location.replace("http://10.208.40.29/" + location.pathname);
     }
   </script>
