@@ -396,12 +396,14 @@ details[open]>summary::after {
     padding: 10px 5px;
     box-sizing: border-box;
 }
+/*
 .date_and_time input[type="date"]{
     width: 9ch;
 }
 .date_and_time input[type="time"]{
     width: 5.5ch;
 }
+*/
 .select {
     min-width: 80%;
 }
