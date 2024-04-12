@@ -1,8 +1,4 @@
 <?php
-    // curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"fetch\",\"start\":202307120000,\"end\":202307130000,\"group\":\"建物A_1F\"}" "http://nas-300-2f/reserve/DRL3-2/php/main.php"
-    // curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"add\",\"eventId\":-1,\"row\":\"A-101\",\"group\":\"建物A_1F\",\"start\":202307131000,\"end\":202307131100,\"others\":{\"name\":\"Tarou\",\"domain\":\"GroupA\",\"contact\":\"mail.com\"}}" "http://nas-300-2f/reserve/DRL3-2/php/main.php"
-    // curl -X POST -H "Content-Type: application/json" -d "{\"type\":\"delete\",\"eventId\":2}" "http://nas-300-2f/reserve/DRL3-2/php/main.php"
-
     function main(){
         // jsonでのpostを取得(urldecodeは不要？)
         $request = json_decode(file_get_contents("php://input"), true);
