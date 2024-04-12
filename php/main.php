@@ -202,52 +202,6 @@
                     die();
                 }
                 break;
-    /*
-            if($l[3] < $end && $start < $l[4] && $group eq $l[1] && $event_id != $l[0] && $row eq $l[2]){  # 重複する予定があれば
-                @results = ("Error", "既に予約が入っています。");
-                $error_handler = 0;
-                last;
-            }
-            if($l[0] == $event_id){   # 同じidの予約なら
-                if ($l[$password_row] eq "" || $hashed_password eq $l[$password_row]){
-                    next;   # パスワードも一致しているため、この予定を編集するためにリストからスキップ
-                } else {
-                    @results = ("Error", "パスワードが違います。");
-                    $error_handler = 0;
-                }
-            }
-            print OUT $_;
-            if($error_handler){ 
-                if($event_id > -1){  # 編集の場合は編集予定の予定を一旦削除
-                    # 書き込み
-                    truncate(FD, 0);
-                    seek(FD, 0, 0);
-
-                    open(IN, "$logdir/temp.dat") || die $!;
-                        while(<IN>){
-                            chomp($_);
-                            if(length($_) > 0){
-                                print FD $_ . "\n";
-                            }
-                        }
-                    close(IN);
-                    $target_id = $event_id;
-                }
-                # 保存ファイルでは、
-                # 0: id, 1: group, 2: row, 3: start, 4: end, 5: name, 6: domain, 7: contactの順
-                print FD $target_id . "\t" . $group . "\t" . $row . "\t" . $start . "\t" . $end;
-                for (my $i = 0; $i <= $#labels; $i++){
-                    if($i + $others_row == $password_row){
-                        print FD "\t" . $hashed_password;
-                    } else {
-                        print FD "\t" . $others->{$labels[$i]};
-                    }
-                }
-                print FD "\n";
-            }
-        
-    */
-                break;
         }
         // 
         header("Content-Type: application/json; charset=utf-8; Access-Control-Allow-Origin: *;");
@@ -265,11 +219,4 @@
     }
 
     main();
-
-    /*
-my @labels = ();
-
-# 保存ファイルでは、
-# 0: id, 1: group, 2: row, 3: start, 4: end, 5: name, 6: domain, 7: contactの順
-    */
 ?>
