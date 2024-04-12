@@ -103,6 +103,9 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 * ファイルの配置場所が前述の場所と異なる場合は、`paramerters.txt`で相対パス or 絶対パスで`perl.cgi`の場所を指定。
 * `reserv.dat`の一番上の行を`parameters.txt`で設定した項目と合わせる(スペースではなく、必ずタブ文字で区切ること)。
 
+同じくあらゆる保証はありませんが、php用のプログラムも作成してあります。
+* [php](https://github.com/KYU49/ReservationForm/tree/develop/php)内のファイルをperl用のプログラムと同様に設置してください。
+
 
 ## フロントエンドとバックエンドの受け渡し
 基本的に全てJSONでやり取りするようにしています。POSTでやりとりされるように設計しています。詳細は以下。
