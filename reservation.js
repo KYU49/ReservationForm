@@ -955,6 +955,7 @@
             if(fe.outlook.checked){
                 this.addOutlookCalendar();
             }
+            this.unselectEvent()
             this.dispatchEvent({type: Model.CONST.TOAST, text: resultJson[1]});
         }
         async deleteEvent(){
