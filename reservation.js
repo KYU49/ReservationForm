@@ -917,7 +917,7 @@
         
         async loadEvents(dayOffsetStart, dayOffsetEnd, group){
             this.dispatchEvent({type: Controller.CONST.NOW_LOADING_START});
-            const resultJson = await this.model.loadEventsFetch(dayOffsetStart, dayOffsetEnd, group);
+            const resultJson = await this.model.loadEventsFetch(dayOffsetStart, dayOffsetEnd, group);  // + ""はundefined対策
             console.log("Fetched Events:", resultJson);
             
             this.model.events.splice(0);    // 古い予定を削除
