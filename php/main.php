@@ -17,14 +17,23 @@
             "end" => "end"
         ];
 
+        // ----------------------------------------------------------
+        //
+        // ここを修正
+        //
+        // ----------------------------------------------------------
+        $mysqlInfo = "mysql:dbname=reservation;host=localhost;port=3333"    // Databaseの名前; ホストのIPやURL; port番号
+        $userName = "php"   // ユーザー名
+        $phpPassword = "password"
+
         // 要求に応じて処理を実施; 参考: https://qiita.com/sanogemaru/items/dd981a5ee4487cedf02f
         switch($request["type"]){
             case "fetch":
                 try{
                     $pdo = new PDO (
-                        "mysql:dbname=reservation;host=localhost;port=3306",    // Databaseの名前; ホストのIPやURL; port番号
-                        "php",      // ユーザー名
-                        "password"  // パスワード
+                        $mysqlInfo,    
+                        $userName,
+                        $phpPassword
                     );
 
                     $stmt = $pdo -> prepare("SELECT * FROM `DRL3-2` WHERE start < :end AND :start < end AND :group = groupName");    // 同じグループの指定した時間の予定だけを取得
@@ -58,9 +67,9 @@
             case "delete":
                 try{
                     $pdo = new PDO (
-                        "mysql:dbname=reservation;host=localhost;port=3306",
-                        "php",
-                        "f4dab52c0dd08b7ca9368b9e1ddad4ff"
+                        $mysqlInfo,    
+                        $userName,
+                        $phpPassword
                     );
                     $hashedPassword = "";
                     // パスワードが指定されている場合のみ、パスワード処理を判定
@@ -94,9 +103,9 @@
             default:
                 try{
                     $pdo = new PDO (
-                        "mysql:dbname=reservation;host=localhost;port=3306",
-                        "php",
-                        "f4dab52c0dd08b7ca9368b9e1ddad4ff"
+                        $mysqlInfo,    
+                        $userName,
+                        $phpPassword
                     );
                     $hashedPassword = "";
                     // パスワードが指定されている場合のみ、パスワード処理を判定

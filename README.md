@@ -105,6 +105,19 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 
 同じくあらゆる保証はありませんが、php用のプログラムも作成してあります。
 * [php](https://github.com/KYU49/ReservationForm/tree/main/php)内のファイルをperl用のプログラムと同様に設置してください。
+* MariaDBなどでSQLデータベースを作成してください。
+| 名前 | タイプ | 照合順序 | デフォルト値 |
+| ---- | ---- | ---- | ---- |
+| id | uuid |  | uuid() |
+| groupName | text | utf8mb4_general_ci | '' |
+| row | text | utf8mb4_general_ci | '' |
+| start | bigint(20) |  | 0 |
+| end | bigint(20) |  | 0 |
+| name | text | utf8mb4_general_ci | '' |
+| domain | text | utf8mb4_general_ci | '' |
+| contact | text | utf8mb4_general_ci | '' |
+| password | text | utf8mb4_general_ci | '' |
+| createdAt | timestamp |  | current_timestamp() |
 
 
 ## フロントエンドとバックエンドの受け渡し
