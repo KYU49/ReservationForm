@@ -106,6 +106,7 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 同じくあらゆる保証はありませんが、php用のプログラムも作成してあります。
 * [php](https://github.com/KYU49/ReservationForm/tree/main/php)内のファイルをperl用のプログラムと同様に設置してください。
 * MariaDBなどでSQLデータベースを作成してください。
+
 | 名前 | タイプ | 照合順序 | デフォルト値 |
 | ---- | ---- | ---- | ---- |
 | id | uuid |  | uuid() |
