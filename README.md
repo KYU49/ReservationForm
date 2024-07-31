@@ -120,6 +120,7 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 | password | text | utf8mb4_general_ci | '' |
 | createdAt | timestamp |  | current_timestamp() |
 
+* main.php内のデータベース、ユーザー名、パスワードの部分を作成したデータベースに合わせて修正してください。
 
 ## フロントエンドとバックエンドの受け渡し
 基本的に全てJSONでやり取りするようにしています。POSTでやりとりされるように設計しています。詳細は以下。
