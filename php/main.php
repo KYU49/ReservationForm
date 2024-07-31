@@ -22,9 +22,9 @@
         // ここを修正
         //
         // ----------------------------------------------------------
-        $mysqlInfo = "mysql:dbname=reservation;host=localhost;port=3333"    // Databaseの名前; ホストのIPやURL; port番号
-        $userName = "php"   // ユーザー名
-        $phpPassword = "password"
+        $mysqlInfo = "mysql:dbname=reservation;host=localhost;port=3333";    // Databaseの名前; ホストのIPやURL; port番号
+        $userName = "php";   // ユーザー名
+        $phpPassword = "password";
 
         // 要求に応じて処理を実施; 参考: https://qiita.com/sanogemaru/items/dd981a5ee4487cedf02f
         switch($request["type"]){
