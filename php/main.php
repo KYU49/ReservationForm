@@ -120,10 +120,11 @@
                         $result[] = "予約しました";
                     }
                     // まずは重複チェック
-                    $stmt = $pdo -> prepare("SELECT * FROM `DRL3-2` WHERE start < :end AND :start < end AND row = :row LIMIT 2");
+                    $stmt = $pdo -> prepare("SELECT * FROM `DRL3-2` WHERE start < :end AND :start < end AND row = :row AND groupName = :group LIMIT 2");
                     $stmt -> bindValue(":start", $request["start"], PDO::PARAM_STR);
                     $stmt -> bindValue(":end", $request["end"], PDO::PARAM_STR);
                     $stmt -> bindValue(":row", $request["row"], PDO::PARAM_STR);
+                    $stmt -> bindValue(":group", $request["group"], PDO::PARAM_STR);
                     $stmt -> execute();
 
                     // 先にエラーハンドリング
