@@ -262,7 +262,8 @@ main{
     height: var(--row_height);
 }
 .timeline_cell:nth-child(even){
-    background-color: var(--bg_even_cell);
+    /* 選択まで色が変わっちゃうから中止。継承しないようにする？ */
+    /*background-color: var(--bg_even_cell);*/
 }
 .timeline_event{
     overflow: hidden;
