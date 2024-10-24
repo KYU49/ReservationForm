@@ -116,16 +116,16 @@
         */
         static time2cell(time, currentDate){
             let cellNumInRow = Math.floor( (time.getHours() + time.getMinutes() / 60.0 - START_TIME) * 60 / SMALLEST_MIN );
+            // END_TIMEよりあとに時間が設定されていた場合、翌日のcellと判定されてしまうのを防ぐため、オーバーした分を引く
+            if(cellNumInRow > (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN){
+                cellNumInRow = (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN;
+            }
             const currentDateYmd = new Date(currentDate);
             currentDateYmd.setHours(0);
             currentDateYmd.setMinutes(0);
             const timeYmd = new Date(time);
             timeYmd.setHours(0);
             timeYmd.setMinutes(0);
-            // END_TIMEよりあとに時間が設定されていた場合、翌日のcellと判定されてしまうのを防ぐため、オーバーした分を引く
-            if(cellNumInRow > END_TIME * 60 / SMALLEST_MIN){
-                cellNumInRow = END_TIME * 60 / SMALLEST_MIN;
-            }
             // currentDateの何個目のセルか取得したいのに、翌日の時間が設定されていた場合は、その分セルを追加する必要がある。
             const dayOffset = (timeYmd.getTime() - currentDateYmd.getTime()) / 1000 / 60 / 60 / 24;
             let cellNum = cellNumInRow + (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN * dayOffset
