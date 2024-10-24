@@ -91,7 +91,7 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 また、こちらもあらゆる保証はしませんが、perl用のCGIプログラムも作成しました。  
 以下はLinux (Ubuntu)上にApacheのサーバーが動いている前提の例です。  
 ファイル構成は各自確認してください。  
-* [perl](https://github.com/KYU49/ReservationForm/tree/main/server)内のファイルを全て`/usr/lib/cgi-bin/reserv`に保存。
+* [perl](https://github.com/KYU49/ReservationForm/tree/main/perl)内のファイルを全て`/usr/lib/cgi-bin/reserv`に保存。
 * `chmod`でperl.cgiは755, 他は775に設定。
     - 動かなかったら(500エラーが出る)、perl.cgi以外を777にしたら動くが、セキュリティ的によろしくないので、cgi-binの所有者を適切に設定すること。
 * `/var/www/html/reserv`に以下のファイルを配置。
@@ -103,6 +103,24 @@ parameters.txtをVSCodeやメモ帳で開き、ファイル内の指示に従っ
 * ファイルの配置場所が前述の場所と異なる場合は、`paramerters.txt`で相対パス or 絶対パスで`perl.cgi`の場所を指定。
 * `reserv.dat`の一番上の行を`parameters.txt`で設定した項目と合わせる(スペースではなく、必ずタブ文字で区切ること)。
 
+同じくあらゆる保証はありませんが、php用のプログラムも作成してあります。
+* [php](https://github.com/KYU49/ReservationForm/tree/main/php)内のファイルをperl用のプログラムと同様に設置してください。
+* MariaDBなどでSQLデータベースを作成してください。
+
+| 名前 | タイプ | 照合順序 | デフォルト値 |
+| ---- | ---- | ---- | ---- |
+| id | uuid |  | uuid() |
+| groupName | text | utf8mb4_general_ci | '' |
+| row | text | utf8mb4_general_ci | '' |
+| start | bigint(20) |  | 0 |
+| end | bigint(20) |  | 0 |
+| name | text | utf8mb4_general_ci | '' |
+| domain | text | utf8mb4_general_ci | '' |
+| contact | text | utf8mb4_general_ci | '' |
+| password | text | utf8mb4_general_ci | '' |
+| createdAt | timestamp |  | current_timestamp() |
+
+* main.php内のデータベース、ユーザー名、パスワードの部分を作成したデータベースに合わせて修正してください。
 
 ## フロントエンドとバックエンドの受け渡し
 基本的に全てJSONでやり取りするようにしています。POSTでやりとりされるように設計しています。詳細は以下。
