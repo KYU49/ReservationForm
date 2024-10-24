@@ -25,6 +25,7 @@
         $mysqlInfo = "mysql:dbname=reservation;host=localhost;port=3306";    // Databaseの名前; ホストのIPやURL; port番号
         $userName = "php";   // ユーザー名
         $phpPassword = "f4dab52c0dd08b7ca9368b9e1ddad4ff";
+        $dbName = "DRL3-2";
 
         // 要求に応じて処理を実施; 参考: https://qiita.com/sanogemaru/items/dd981a5ee4487cedf02f
         switch($request["type"]){
@@ -36,7 +37,7 @@
                         $phpPassword
                     );
 
-                    $stmt = $pdo -> prepare("SELECT * FROM `DRL3-2` WHERE start < :end AND :start < end AND :group = groupName");    // 同じグループの指定した時間の予定だけを取得
+                    $stmt = $pdo -> prepare("SELECT * FROM `{$dbName}` WHERE start < :end AND :start < end AND :group = groupName");    // 同じグループの指定した時間の予定だけを取得
                     $stmt -> bindValue(":end", $request["end"], PDO::PARAM_STR);
                     $stmt -> bindValue(":start", $request["start"], PDO::PARAM_STR);
                     $stmt -> bindValue(":group", $request["group"], PDO::PARAM_STR);
@@ -79,13 +80,13 @@
                     }
                     $result = ["Success", "予定を削除しました"];
 
-                    $stmt = $pdo -> prepare("SELECT * FROM `DRL3-2` WHERE id = :id LIMIT 1");    // まずは存在チェック
+                    $stmt = $pdo -> prepare("SELECT * FROM `{$dbName}` WHERE id = :id LIMIT 1");    // まずは存在チェック
                     $stmt -> bindValue(":id", $request["eventId"], PDO::PARAM_STR);
                     $stmt -> execute();
                     if($cols = $stmt -> fetch()){    // 存在する場合
                         // パスワードの設定チェック
                         if($cols["password"] == "" || $hashedPassword == $cols["password"]){    // データベース上にパスワードが設定されていないか、パスワードが一致する場合は削除
-                            $stmt = $pdo -> prepare("DELETE FROM `DRL3-2` WHERE id = :id");
+                            $stmt = $pdo -> prepare("DELETE FROM `{$dbName}` WHERE id = :id");
                             $stmt -> bindValue(":id", $request["eventId"], PDO::PARAM_STR);
                             $stmt -> execute();
                         }else{
@@ -120,7 +121,7 @@
                         $result[] = "予約しました";
                     }
                     // まずは重複チェック
-                    $stmt = $pdo -> prepare("SELECT * FROM `DRL3-2` WHERE start < :end AND :start < end AND row = :row AND groupName = :group LIMIT 2");
+                    $stmt = $pdo -> prepare("SELECT * FROM `{$dbName}` WHERE start < :end AND :start < end AND row = :row AND groupName = :group LIMIT 2");
                     $stmt -> bindValue(":start", $request["start"], PDO::PARAM_STR);
                     $stmt -> bindValue(":end", $request["end"], PDO::PARAM_STR);
                     $stmt -> bindValue(":row", $request["row"], PDO::PARAM_STR);
@@ -176,14 +177,14 @@
                         $subQueryTo = substr($subQueryTo, 0, -2);
                         $subQueryVal = substr($subQueryVal, 0, -2);
 
-                        $stmt = $pdo -> prepare("INSERT INTO `DRL3-2` (" . $subQueryTo . ") VALUES (" . $subQueryVal . ")");
+                        $stmt = $pdo -> prepare("INSERT INTO `{$dbName}` (" . $subQueryTo . ") VALUES (" . $subQueryVal . ")");
                     }else{  // update
                         // どの変数に値を入れるか
                         foreach($keysGen as $key => $value){
                             $subQueryVal .= $value . " = :" . $key . ", ";
                         }
                         $subQueryVal = substr($subQueryVal, 0, -2);
-                        $stmt = $pdo -> prepare("UPDATE `DRL3-2` SET " . $subQueryVal . " WHERE id =:eventId");
+                        $stmt = $pdo -> prepare("UPDATE `{$dbName}` SET " . $subQueryVal . " WHERE id =:eventId");
                         $stmt -> bindValue(":eventId", $request["eventId"], PDO::PARAM_STR);  // 更新なので、idだけセットしておく
                     }
                     // subqueryの分をbindする
