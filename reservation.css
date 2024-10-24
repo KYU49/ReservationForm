@@ -25,6 +25,7 @@
     --font_lightred: #eb5c63;
     --font_link_blue: #6cc4ff;
     --bg_header: #302020;
+    --bg_even_cell: #00000005;
     --underbar_time: #54595E;
     --underbar_time_even: #f4595E;
     --underbar_row_sep: #302020;
@@ -259,6 +260,10 @@ main{
     /* ↑ここの太さを変える場合はプログラムの方の「cellのboader分だけここで足している。」 の部分も変更が必要*/
     box-sizing: border-box;
     height: var(--row_height);
+}
+.timeline_cell:nth-child(even){
+    /* 選択まで色が変わっちゃうから中止。継承しないようにする？ */
+    /*background-color: var(--bg_even_cell);*/
 }
 .timeline_event{
     overflow: hidden;
