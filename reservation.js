@@ -120,6 +120,10 @@
             if(cellNumInRow > (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN){
                 cellNumInRow = (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN;
             }
+            // 逆にSTART_TIMEより前に時間が設定されていた場合も修正
+            if(cellNumInRow < 0){
+                cellNumInRow = 0;
+            }
             const currentDateYmd = new Date(currentDate);
             currentDateYmd.setHours(0);
             currentDateYmd.setMinutes(0);
