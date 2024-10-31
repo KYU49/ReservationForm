@@ -1035,6 +1035,7 @@
             });
             // 今日ボタン。
             document.getElementById("moveToToday").addEventListener("click", (e) => {
+                e.preventDefault(); // inputが走っちゃって画面遷移が起こる他、URL末尾に?date=が追加されてしまうのを防ぐ。
                 this.controller.dateChanged(Utility.getTodayAsYMD(0, true));
             });
 
