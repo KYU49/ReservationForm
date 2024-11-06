@@ -91,6 +91,9 @@ form[name="currentDate"] input{
     display: inline-block;
     vertical-align: middle;
 }
+.hide{
+    display: none;
+}
 .navigate_day{
     color: var(--font_light)!important;
     min-width: 2em;
