@@ -915,10 +915,10 @@
             
             this.dispatchEvent({type: Controller.CONST.REND_ROWS, rowsName: this.model.rowsName});
             this.dispatchEvent({type: Controller.CONST.RESTORE_SELECT});
-            this.loadEvents(0, FOLD_DAYS - 1, groupName);    // FIXME DataChangedの方と重複してる
+            this.loadEvents(0, FOLD_DAYS - 1, groupName);    //FIXME DataChangedの方と重複してる
 
             for(let i = 0; i < this.model.isRowsOpened.length; i++){
-                if(this.model.isRowsOpened[i]){ // 負荷軽減のため、開いているものだけに処理
+                if(this.model.isRowsOpened[i] || this.model.rowsName.filter(row => !row.startsWith("html:")).length == 1){ // 負荷軽減のため、開いているものだけに処理。また、そのページの要素が1つだけ(html要素を除く)なら開く。
                     this.openRows(i, true);
                 }
             }
@@ -1445,10 +1445,14 @@
 
         openRows(rowsNum, isOpen){
             let rows = document.getElementsByClassName("timeline_rows")[rowsNum];
+            const eleDate = rows.firstChild.firstChild.firstChild;
             if(isOpen){
                 rows.firstChild.firstChild.classList.add("timeline_label_close");
+                eleDate.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true);
+                eleDate.classList.remove("hide");
             }else{
                 rows.firstChild.firstChild.classList.remove("timeline_label_close");
+                eleDate.classList.add("hide");
             }
             for (let i = 1; i < rows.children.length; i++){
                 let row = rows.children[i];
@@ -1547,21 +1551,17 @@
                         ele.classList.add("timeline_label");
                         this.model.isRowsOpened.push(false);
                         ele.addEventListener("click", (event) => {
-                            let rows = event.currentTarget.parentElement.parentElement;
+                            let rows = ele.parentElement.parentElement;
                             let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
                             this.controller.openRows(rowNums, !this.model.isRowsOpened[rowNums]);
-                            if(this.model.isRowsOpened[rowNums]){
-                                event.currentTarget.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true) + "<br>" + name;
-                            }else{
-                                event.currentTarget.innerHTML = name;
-                            }
                         });
                         this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
                             let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(timeline_rows);
                             if(this.model.isRowsOpened[rowNums]){
-                                ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, 0, true) + "<br>" + name;
+                                eleDate.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, 0, true);
+                                eleDate.classList.remove("hide");
                             }else{
-                                ele.innerHTML = name;
+                                eleDate.classList.add("hide");
                             }
                         });
                     }else{
