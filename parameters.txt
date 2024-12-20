@@ -1,10 +1,35 @@
+/* ------------------
+// 左ペイン(場所)の項目
+// ------------------
+// 入力例:
+// # 建物名など(セクション分けに利用)
+// + 部屋名や階
+// * 予約項目の行名
+//
+// のように入力します(#, +, *全てが揃っている必要あり)。
+//
+// 「+ 専用機器[Group1]」のように[]内に英数字を入力すると、
+// URLの最後に「https://hogehoge/index.html?Group1」のようにした場合のみ表示されるようになります。
+// 注意: 部分一致でも表示されるため、「https://hogehoge/index.html?Group10」でも表示されてしまいます。
+// [Group1][Group2]の両方を表示したい場合は「https://hogehoge/index.html?Group1Group2」で表示可能。
+//
+// 「+ 専用機器[^Guest]」のように[^～]の形式で英数字を入力すると、
+// URLの最後に「https://hogehoge/index.html?Guest」のようにした場合表示されなくなります(↑と逆)。
+//
+// 「+ 難しい機器{この機器の使い方は～}」のように{}内に説明を入力すると、マウスオーバーで表示されます。
+// 「+」の項目の{}内にURLを入れた場合は、予約項目の表示ではなく、新しいタブでURLを開くリンクとして働きます。
+// htmlによる装飾(<br>や<font color="red"></font>など)使用可能
+// 「% <img src="~" />」のように「% 」の後にhtmlタグを入れると、その位置に入力した要素が挿入されます([]や{}などは使用不可)。
+//
+// 予約項目を別の建物や部屋に移動したり、予約項目名を変更したりすると、過去の予定が参照できなくなるため、注意(データベースを直接修正する必要あり)。
+//
+------------------ */
+
 # 300号館
 + 2F-実験装置
-* LabChip
 * CQ1
 * CQ1解析PC
 * Paradigm
-* FDSS
 * qPCR
 * 208 安キャビ(手前)
 * 208 安キャビ(奥)
@@ -13,7 +38,13 @@
 * 202 安キャビ(左手前)
 * 202 安キャビ(左奥)
 
-* 居室計算用PC
+* 居室計算用PC{10.11.126.154, 要ユーザー登録}
+* 居室計算用WorkStation{Win: 10.11.126.228, Linux: 10.11.126.252}
+% ↑WindowsとLinuxのDual bootになっており、切り替えで全員ログアウトされるため、要予約(Linuxは複数ユーザー同時ログイン可のため、使用者で相談してください)
+* KingFisher<br>(RNA抽出)
+* On-chip Sort<br>フローサイト
+* LabChip
+* FDSS
 
 + 4F-InCell
 * InCell6000 (測定)
@@ -22,9 +53,13 @@
 # 280号館
 + 4F-実験装置
 * Amersham imager
-* Envision (暗室使用)
+* Envision (測定)
+% Envisionは暗室内にあります。
+* 暗室使用
 * Echo
 * Quantistudio7<br>(qPCR)
+* Jess<br>(SIMPLE Western)
+% ↑金曜日の夜にかけっぱなしで帰ることは禁止。
 * BIACORE T200
 * Thermal cycler
 * XFe96
@@ -36,19 +71,63 @@
 * ベンチC (A隣)
 * ベンチD (B隣)
 
-# 外部リンク
-+ 薬理系会議室{https://ecots1.daiichisankyo.com/sites/1070/ResFuncMtgRm/Lists/3002F/calendar.aspx}
-+ 第n会議室{http://pksyap01.jpn-pharm.ad.local/scripts/webhello/pc/default.asp}
-+ 280号館 動物実験施設 予約表{http://10.208.40.29/frl/reserv_280/index.html}
-+ 600号会議室{http://admetus.jpn-pharm.ad.local/cgi-bin/reserve/600/index.pl}
-+ リンク集{http://10.208.40.29/frl/link_collection/index.html?DRL3}
+# DRL3-2限定[DRL3-2]
++ 派遣社員さん業務依頼
+* 柿本さん
+% <h2>入力ルール</h2><ol><li>「依頼業務内容」を備考欄に入力。</li><li>入力者は責任を持って前日までにご説明し、了解を得る。</li><li>依頼が重なった場合は当事者同士で相談し、調整を図る。</li></ol>
++ 業務依頼用Box{https://daiichisankyo.app.box.com/folder/201664910929}
 
-- 名前,name,*+
+# 外部リンク
++ 薬理系会議室{https://dsg2ic.sharepoint.com/sites/DSJ-Dseco-1070/ResFuncMtgRm/Lists/3002F/calendar.aspx}
++ 第n会議室{http://pksyap01.jpn-pharm.ad.local/scripts/webhello/pc/default.asp}
++ 280号館 動物実験施設 予約表{http://nas-300-2f/reserve/Animal280/}
++ 600号会議室{http://admetus.jpn-pharm.ad.local/cgi-bin/reserve/600/index.pl}
++ リンク集{http://NAS-300-2F/link_collection/index.html?DRL3}
+
+/* ------------------
+// 右ペイン(予約内容)の項目
+// ------------------
+// 入力例: 
+// - 「表示名」,「ユニーク(他とかぶらない)な英数字でid」,*+
+// - 名前,name,*+
+// - 所属,domain,+
+//
+// のように「,」で区切って入力します。
+// 最後に「*」をつけると、必須入力項目になります。
+// 最後に「+」をつけると、タイムライン上の予約にその項目の内容が表示されるようになります。
+// ※上の例だと、名前が必須項目で、タイムラインには「予約太郎 (改行) 予約課」のようにバーが表示されます。
+//
+// 「予約項目の行名」、「開始時間」、「終了時間」は常に表示されます。
+// また、以下のように、id部分に「password」を指定すると、パスワード扱いになります(パスワードが間違っていると、変更できないようにするにはサーバー側で実装する必要があります)。
+// - 変更用パスワード,password,+
+//
+------------------ */
+
+- 名前,name,*+!
 - 備考,domain,+
 - 所属,contact,
+
+/* ------------------
+// 変更可能なパラメーターの項目
+// ------------------
+// 入力例:
+// $START_TIME = 8
+// $END_TIME = 20
+// $FOLD_DAYS = 7
+// $SMALLEST_MIN = 30
+// $DATABASE_URL = http://hogehoge/fuga.cgi
+//
+// のように「$」 + 「パラメーター名」 + 「=」に続けて、値を入力します。
+// 以下、それぞれの説明
+// $START_TIME: 予約可能時間の一番朝早い時間。タイムラインの一番左に表示される。
+// $END_TIME: 予約可能時間の一番夜遅い時間。タイムラインの一番右に表示される。
+// $FOLD_DAYS: 部屋/機器名をクリックしたときに表示する日にちの数。7なら一週間分。
+// $SMALLEST_MIN: 予約時間の最小単位を「分」で指定。必ず60の約数である必要がある。20, 30, 60を推奨。
+// $DATABASE_URL: 予約の取得や予約の追加のためにpostを送るURL。
+------------------ */
 $START_TIME = 8
 $END_TIME = 20
 $FOLD_DAYS = 7
 $SMALLEST_MIN = 30
-$DATABASE_URL = /cgi-bin/frl/reserv_DRL3/perl.cgi
+$DATABASE_URL = ./php/main.php
 

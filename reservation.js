@@ -32,6 +32,7 @@
     let SERVER_ERROR = "サーバーとの通信でエラーが発生しました。";
     let DELETE_CONFIRMATION = "の予約を削除します。";
     let ERROR_TIME = "開始時間と終了時間が逆転しています。";
+    let ALERT_CHANGE = "前回と異なる名前が入力されています。\n予約/変更してよろしいですか？";
     const PASS_WORD = "password";
 
     const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
@@ -277,6 +278,7 @@
             this.leftPane = [];     // 左ペイン。[{key: "hoge", name: "hoge" , arr: [{key: "hoge_fuga", name: "huga", arr: ["装置1", "装置2"]}, {}]}, ]
             this.rightPane = [];    // 右ペイン。[{key: "hoge", name: "ほげ", required: false, display: true}, ...], displayはtimelineに表示するか否か
             this.eventContents = [];    // 右ペインの項目のうち、タイムラインに表示する項目のkey (name)
+            this.alertChange = [];    // 右ペインの項目のうち、前回と変更があった場合に警告を表示する項目(名前などに入れておくと、別の人の予定を誤って変更する可能性が減る)
         }
 
         // idからEventItemとどの機器のEventItemかを返す
@@ -391,6 +393,10 @@
                         if(arr[2].includes("+")){
                             display = true;
                             this.eventContents.push(arr[1]);    // ここで、タイムラインに表示するものを確認(本当はControllerでやりたい)
+                        }
+                        if(arr[2].includes("!")){
+                            display = true;
+                            this.alertChange.push(arr[1]);    // 変更があった場合にalertを出す項目(本当はControllerでやりたい)
                         }
                     }
                     this.rightPane.push(
@@ -946,10 +952,28 @@
         }
 
         async saveEvent(){
-            //FIXME 始まりと終わりが逆になっていた場合、ここで警告を出してストップ。
+            // 始まりと終わりが逆になっていた場合、ここで警告を出してストップ。
             if(this.model.currentEvent.start > this.model.currentEvent.end){
                 this.dispatchEvent({type: Model.CONST.TOAST, text: ERROR_TIME});
                 return;
+            }
+
+            if(this.model.alertChange.length > 0){  // 前回保存していた値と、今回の値が異なる場合は警告
+                let flag = false;
+                for(let i = 0; i < this.model.alertChange.length; i++){
+                    if(
+                        window.localStorage.hasOwnProperty(this.model.alertChange[i]) &&
+                        this.model.currentEvent.others[this.model.alertChange[i]] != window.localStorage.getItem(this.model.alertChange[i])
+                    ){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag){
+                    if(!window.confirm(ALERT_CHANGE)){
+                        return;
+                    }
+                }
             }
 
             this.model.storeName();
@@ -973,6 +997,26 @@
                 this.dispatchEvent({type: Controller.CONST.NOW_LOADING_END});
                 return;
             }
+            
+            if(this.model.alertChange.length > 0){  // 前回保存していた値と、今回の値が異なる場合は警告
+                let flag = false;
+                for(let i = 0; i < this.model.alertChange.length; i++){
+                    if(
+                        window.localStorage.hasOwnProperty(this.model.alertChange[i]) &&
+                        this.model.currentEvent.others[this.model.alertChange[i]] != window.localStorage.getItem(this.model.alertChange[i])
+                    ){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag){
+                    if(!window.confirm(ALERT_CHANGE)){
+                        this.dispatchEvent({type: Controller.CONST.NOW_LOADING_END});
+                        return;
+                    }
+                }
+            }
+
             const resultJson = await this.model.deleteEventFetch();
             this.unselectEvent();
             this.reloadTimeline();
