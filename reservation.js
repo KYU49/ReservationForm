@@ -1491,11 +1491,11 @@
             let rows = document.getElementsByClassName("timeline_rows")[rowsNum];
             const eleDate = rows.firstChild.firstChild.firstChild;
             if(isOpen){
-                rows.firstChild.firstChild.classList.add("timeline_label_close");
+                rows.getElementsByClassName("timeline_label")[0].classList.add("timeline_label_close");
                 eleDate.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true);
                 eleDate.classList.remove("hide");
             }else{
-                rows.firstChild.firstChild.classList.remove("timeline_label_close");
+                rows.getElementsByClassName("timeline_label")[0].classList.remove("timeline_label_close");
                 eleDate.classList.add("hide");
             }
             for (let i = 1; i < rows.children.length; i++){
@@ -1588,7 +1588,11 @@
                     const ele = document.createElement("div");
                     // 2行目からは同一の部屋の翌日以降のタイムライン
                     if(i == 0){
-                        ele.innerHTML = name;
+                        const eleDate = document.createElement("div");
+                        const eleName = document.createElement("div");
+                        ele.appendChild(eleDate);
+                        ele.appendChild(eleName);
+                        eleName.innerHTML = name;
                         // 説明文を無理やり取得
                         const explain = this.model.rowsExplain[this.model.rowsNameWoHtml.indexOf(name)];
                         ele.title = name + ": " + explain;
@@ -1609,7 +1613,9 @@
                             }
                         });
                     }else{
-                        ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);                    
+                        const eleDate = document.createElement("div");
+                        ele.appendChild(eleDate);
+                        eleDate.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);                    
                         const dow = Utility.ymd2DowNum(Utility.date2ymd(this.model.currentDate), i);
                         if(dow == 0){  // 日
                             ele.classList.add("sunday");
