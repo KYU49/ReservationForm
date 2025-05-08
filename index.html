@@ -1,101 +1,99 @@
 <!--
-    Copyright (c) 2023 KYU @ https://github.com/KYU49
+		Copyright (c) 2023 KYU @ https://github.com/KYU49
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+		This program is free software: you can redistribute it and/or modify
+		it under the terms of the GNU Affero General Public License as
+		published by the Free Software Foundation, either version 3 of the
+		License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+		This program is distributed in the hope that it will be useful,
+		but WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+		GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
+		You should have received a copy of the GNU Affero General Public License
+		along with this program.	If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 -->
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <title>予約システム</title>
-  <meta name="description" content="予約システム">
-  <meta http-equiv="Cache-Control" content="no-store">
-  <script>
-    // IE弾き
-    var userAgent = window.navigator.userAgent.toLowerCase();
-    if(userAgent.indexOf("msie") != -1 || userAgent.indexOf("trident") != -1) {
-      window.location.replace("http://10.208.40.29" + location.pathname);
-    }
-  </script>
-  <link rel="stylesheet" href="reservation.css?v=231121">
-  <script src="reservation.js?231024"></script>
+	<meta charset="utf-8">
+	<title>予約システム</title>
+	<meta name="description" content="予約システム">
+	<meta http-equiv="Cache-Control" content="no-store">
+	<link rel="stylesheet" href="reservation.css?v=231121">
+	<script src="reservation.js?231024"></script>
 </head>
 <body>
-  <header>
-    <form name="currentDate">
-      <input value="&lt;" class="negative navigate_day" name="previousDay" type="button" />
-      <input name="date" type="date" onkeydown="return false" />  <!-- 直接入力だと、入力のたびにchangeが走るため、直接入力を禁止 -->
-      <input value="&gt;" class="negative navigate_day" name="nextDay" type="button" />
-      <button id="moveToToday">今日</button>
-    </form>
-    　標準PCの画面では、拡大率75 %を推奨(Ctrlキーを押しながら「-」を3回)。
-    <sectoin class="github_url">
-      不具合報告や追加依頼などは<a href="mailto:hibino.masaki.az@daiichisankyo.co.jp">こちら</a>まで。
-    </section>
-  </header>
-  <main>
-    <div id="loading">
-      <div class="circle"></div>
-      　Now Loading...
-    </div>
+	<header>
+		<form name="currentDate">
+			<input value="&lt;" class="negative navigate_day" name="previousDay" type="button" />
+			<input name="date" type="date" onkeydown="return false" />	<!-- 直接入力だと、入力のたびにchangeが走るため、直接入力を禁止 -->
+			<input value="&gt;" class="negative navigate_day" name="nextDay" type="button" />
+			<button id="moveToToday">今日</button>
+		</form>
+		　標準PCの画面では、拡大率75 %を推奨(Ctrlキーを押しながら「-」を3回)。
+		<sectoin class="github_url">
+			不具合報告や追加依頼などは<a href="mailto:masaki.hibino@daiichisankyo.com">こちら</a>まで。
+		</section>
+	</header>
+	<main>
+		<div id="loading">
+			<div class="circle"></div>
+			　<section>Now Loading...<br>画面が切り替わらない場合は「F5」を押し、<br>それでもだめな場合は<a href="mailto:masaki.hibino@daiichisankyo.com">こちら</a>まで。</section>
+		</div>
 
-    <div id="toast">
-      <div id="toast_text"></div>
-    </div>
-    
-    <div id="mouseStalker"></div>
+		<div id="toast">
+			<div id="toast_text"></div>
+		</div>
+		
+		<div id="mouseStalker"></div>
 
-    <nav id="group_list" class="container">
-    </nav>
+		<nav id="group_list" class="container">
+		</nav>
 
-    <section id="timeline" class="container">
-      <div id="timeline_header"></div>
-      <div id="timeline_main"></div>
-    </section>
-    <section id="form_container" class="container">
-      <select id="rows_pulldown" size="1"></select>
-      <div class="bar_form" />
-      <form name="reservationForm">
-        <input name="id" type="hidden" />
+		<section id="timeline" class="container">
+			<div id="timeline_header"></div>
+			<div id="timeline_main"></div>
+		</section>
+		<section id="form_container" class="container">
+			<select id="rows_pulldown" size="1"></select>
+			<div class="bar_form" />
+			<form name="reservationForm">
+				<input name="id" type="hidden" />
 
-        <label class="caption">開始時間</label><br>
-        <section class="date_and_time">
-          <input name="from_ymd" type="date" />
-          <input name="from_time" type="time" />
-        </section>
-        
-        <label class="caption">終了時間</label><br>
-        <section class="date_and_time">
-          <input name="to_ymd" type="date" />
-          <input name="to_time" type="time" />
-        </section>
-        <div class="bar_form" />
-        
-        <div id="text_form">
-        </div>
-        <section>
-          <input name="reserve" id="reserve" type="button" id="reserveButton" value="予約" />
-          <input name="change" id="change" type="button" id="shiftButton" value="変更" />
-          <input name="delete" id="delete" class="negative" type="button" id="deleteButton" value="削除" />
-          <input name="cancel" id="cancel" class="negative" type="button" id="cancelButton" value="キャンセル" />
-        </section>
-        <span id="warning"></span><br>
-        
-        <label for="outlook" class="checkbox_label"><input type="checkbox" id="outlook" name="outlook" /> Outlookカレンダーに追加</label><br>
-        <label for="google" class="checkbox_label" style="display:none"><input type="checkbox" id="google" name="google" /> Googleカレンダーに追加</label>
-      </form>
-    </section>
-  </main>
+				<label class="caption">開始時間</label><br>
+				<section class="date_and_time">
+					<input name="from_ymd" type="date" />
+					<input name="from_time" type="time" />
+				</section>
+				
+				<label class="caption">終了時間</label><br>
+				<section class="date_and_time">
+					<input name="to_ymd" type="date" />
+					<input name="to_time" type="time" />
+				</section>
+				<div class="bar_form" />
+				
+				<div id="text_form">
+				</div>
+				<section>
+					<input name="reserve" id="reserve" type="button" id="reserveButton" value="予約" />
+					<input name="change" id="change" type="button" id="shiftButton" value="変更" />
+					<input name="delete" id="delete" class="negative" type="button" id="deleteButton" value="削除" />
+					<input name="cancel" id="cancel" class="negative" type="button" id="cancelButton" value="キャンセル" />
+				</section>
+				<span id="warning"></span><br>
+				
+				<label for="outlook" class="checkbox_label"><input type="checkbox" id="outlook" name="outlook" /> Outlookカレンダーに追加</label><br>
+				<label for="google" class="checkbox_label" style="display:none"><input type="checkbox" id="google" name="google" /> Googleカレンダーに追加</label>
+			</form>
+
+			<!-- 直近の予約を表示する窓 -->
+			<hr>
+			<div class="caption">直近の予約</div>
+			<div id="name_fetch_container"></div>
+		</section>
+	</main>
 </body>
 </html>

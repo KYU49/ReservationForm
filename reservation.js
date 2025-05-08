@@ -253,6 +253,7 @@
                 SET_RESERVATION_TIME: "setReservationTime",
                 REFLECT_RESERVATION_ROW: "reflectReservationRow",
                 SET_RESERVATION_TEXT_CONTENTS: "setName",
+                SET_NAME_FETCH_RESULTS: "setNameFetchResults",
                 FINISH_INITIAL_FETCH: "finishInitialFetch",
                 REFLECT_RESERVATION_BUTTON: "reflectReservationButton",
                 LAST_OPENED_GROUP: "lastOpenedGroup",
@@ -346,6 +347,13 @@
                 this.currentEvent.others[key] = text;
             }
             this.dispatchEvent({type: Model.CONST.SET_RESERVATION_TEXT_CONTENTS, user: user});
+        }
+
+        // 今日以降の予約リストを受取り、それをViewに渡して描画させる。
+        setNameFetchResults(resultJson){
+            if(resultJson && resultJson.length > 0){
+                this.dispatchEvent({type: Model.CONST.SET_NAME_FETCH_RESULTS, results: resultJson});
+            }
         }
 
         enterChangeMode(eventId){    // -1を渡すと編集モードから抜ける
@@ -519,13 +527,19 @@
             window.localStorage.setItem("google", google && google.checked);
             window.localStorage.setItem("outlook", outlook && outlook.checked);
         }
-        restoreSavedName(){
+        async restoreSavedName(){
             let flag = true;
             for(let key in this.currentEvent.others){
                 const value = window.localStorage.getItem(key);
                 if(value){
                     this.setReservationTextContent(key, value);
                     flag = false;
+
+                    // 名前を取得した際に、その人が予約した直近の予定を取得する。
+                    if(key == "name"){
+                        const resultJson = await this.loadNameFetch(value);
+                        this.setNameFetchResults(resultJson);
+                    }
                 }
             }
             if(PASS_WORD in this.currentEvent){
@@ -539,7 +553,7 @@
                 // reservationのテキストコンテンツのうち、必須項目が抜けてる場合にアラートを表示するため。
                 this.dispatchEvent({type: Model.CONST.SET_RESERVATION_TEXT_CONTENTS, user: {}});
             }
-            
+
             // チェックボックスの復元
             const google = document.getElementById("google");
             const outlook = document.getElementById("outlook");
@@ -571,6 +585,21 @@
                 resultJson = await response.json();
             }
             console.log("Response:", resultJson);
+            return resultJson;
+        }
+        async loadNameFetch(name){
+            let resultJson = {};
+            const startYmd = Utility.date2ymd(this.currentDate);
+            const params = {type: "name_fetch", start: startYmd + "0000", name: name};
+            console.log("Name_Fetch: ", params);
+            const response = await fetch(DATABASE_URL, {
+                method: "post",
+                header: {
+                    "content-Type": "application/json"
+                },
+                body: JSON.stringify(params)
+            }).catch((e) => this.dispatchEvent({type: Model.CONST.TOAST, text: e + "\n" + SERVER_ERROR}));
+            resultJson = await response.json();
             return resultJson;
         }
         async saveEventFetch(){
@@ -1379,6 +1408,29 @@
             });
             this.model.addEventListener(Model.CONST.TOAST, (event) => {
                 this.showToast(event.text);
+            });
+
+            this.model.addEventListener(Model.CONST.SET_NAME_FETCH_RESULTS, (event) => {
+                const results  = event.results;
+                const ele = document.getElementById("name_fetch_container");
+                while(ele.lastChild){
+                    ele.removeChild(ele.lastChild)
+                }
+                for(let result of results){
+                    const row = document.createElement("div");
+                    row.classList.add("row")
+                    const start = result["start"];
+                    const groupName = result["groupName"];
+                    row.innerHTML = Utility.ymdhmForHuman(start).slice(0, -3) + "<br>" + groupName + "<br>" + result["row"]; // ymdhmsになっちゃうから、sの部分":00"を削除
+                    row.addEventListener("click", (event) => {
+                        const ymd = start.substr(0, 4) + "-" +  start.substr(4, 2) + "-" + start.substr(6, 2);
+                        this.controller.dateChanged(ymd);
+                        
+                        this.controller.switchGroup(groupName);
+                        this.model.setLastOpenedGroup(groupName);
+                    });
+                    ele.appendChild(row);
+                }
             });
         }
 

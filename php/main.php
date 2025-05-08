@@ -65,6 +65,31 @@
                     die();
                 }
                 break;
+            case "name_fetch":    // 特定のnameが予約したstart以降の全予定を取得
+                try{
+                    $pdo = new PDO (
+                        $mysqlInfo,    
+                        $userName,
+                        $phpPassword
+                    );
+
+                    $stmt = $pdo -> prepare("SELECT * FROM `{$dbName}` WHERE :start < start AND :name = name ORDER BY start ASC LIMIT 50");    // 同じグループの指定した時間の予定だけを取得
+                    $stmt -> bindValue(":start", $request["start"], PDO::PARAM_STR);
+                    $stmt -> bindValue(":name", $request["name"], PDO::PARAM_STR);
+                    $stmt -> execute();
+                    while($cols = $stmt -> fetch()){
+                        $tempRow = [];
+                        $tempRow["groupName"] = $cols["groupName"];
+                        $tempRow["start"] = $cols["start"];
+                        $tempRow["row"] = $cols["row"];
+                        $result[] = $tempRow;
+                    }
+                    $pdo = null;
+                } catch (PDOException $e){
+                    print "DB ERROR: " . $e->getMessage() . "</br>";
+                    die();
+                }
+                break;
             case "delete":
                 try{
                     $pdo = new PDO (
