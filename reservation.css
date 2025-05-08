@@ -434,6 +434,21 @@ details[open]>summary::after {
 #form_container.editing{
     background-color: var(--bg_form_editing);
 }
+
+#name_fetch_container{
+	overflow-y: scroll;
+	font-size: smaller;
+	max-height: 16lh;
+}
+#name_fetch_container .row{
+	cursor: pointer;
+	background: #FFFFFF55;
+	border-bottom: 1px solid var(--bar_form);
+}
+#name_fetch_container .row::first-line{
+	font-weight: bolder;
+}
+
 .bar_form{
     background: var(--bar_form);
     width: 100%;
