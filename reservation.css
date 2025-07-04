@@ -1,438 +1,440 @@
 /*
-    Copyright (c) 2023 KYU @ https://github.com/KYU49
+	Copyright (c) 2023 KYU @ https://github.com/KYU49
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Affero General Public License as
+	published by the Free Software Foundation, either version 3 of the
+	License, or (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
+	You should have received a copy of the GNU Affero General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+/* LAN環境で使えるように、外部フォントの読み込みを中止
 @import url(http://fonts.googleapis.com/earlyaccess/notosansjp.css);
+*/
 :root{
-    --font_light: white;
-    --font_gray: #54595E;
-    --font_lightgray: #94999E;
-    --font_dark: #34393E;
-    --font_red: #cc0000;
-    --font_lightred: #eb5c63;
-    --font_link_blue: #6cc4ff;
-    --bg_header: #302020;
-    --bg_even_cell: #00000005;
-    --underbar_time: #54595E;
-    --underbar_time_even: #f4595E;
-    --underbar_row_sep: #302020;
-    --vertical_bar_timeline: #ccbbbb;
-    --vertical_bar_label: #302020;
-    --vertical_bar_event: #99b49e;
-    --bg_transparent: ffffff00;
-    --bg_list: #34393E;
-    --bg_list_dark: #14191E;
-    --bg_list_selected: #54595E;
-    --bg_list_active: #74797E;
-    --bg_timeline_selected: #f4d9dE;
-    --bg_timeline_event: #d9f4de;
-    --bg_form: #e4d9dE;
-    --bg_form_editing: #ecd0d4;
-    --bg_loading: #000000cc;
-    --bg_toast: #1c74e9cc;
-    --bg_button: #1c74e9;
-    --bg_button_disabled: #c4c9cE;
-    --bg_button_hover: #3c94f9;
-    --bg_button_active: #0c54c9;
-    --bg_saturday: #0000ff22;
-    --bg_sunday: #ff000022;
-    --border_negative_button: #1c74e999;
-    --bg_negative_button_hover: #ffffff55;
-    --bg_nvegative_button_active: #00000033;
-    --font_form_highlighted: #ab1c23;
-    --bar_form: #ccbbbb;
-    --event_selected: #f4a9ae;
-    --row_event_space: 10px; /* eventの下を少し空けることで選択しやすく */
-    --row_height: calc(7ex + var(--row_event_space));
-    --header_height: 50px;
+	--font_light: white;
+	--font_gray: #54595E;
+	--font_lightgray: #94999E;
+	--font_dark: #34393E;
+	--font_red: #cc0000;
+	--font_lightred: #eb5c63;
+	--font_link_blue: #6cc4ff;
+	--bg_header: #302020;
+	--bg_even_cell: #00000005;
+	--underbar_time: #54595E;
+	--underbar_time_even: #f4595E;
+	--underbar_row_sep: #302020;
+	--vertical_bar_timeline: #ccbbbb;
+	--vertical_bar_label: #302020;
+	--vertical_bar_event: #99b49e;
+	--bg_transparent: ffffff00;
+	--bg_list: #34393E;
+	--bg_list_dark: #14191E;
+	--bg_list_selected: #54595E;
+	--bg_list_active: #74797E;
+	--bg_timeline_selected: #f4d9dE;
+	--bg_timeline_event: #d9f4de;
+	--bg_form: #e4d9dE;
+	--bg_form_editing: #ecd0d4;
+	--bg_loading: #000000cc;
+	--bg_toast: #1c74e9cc;
+	--bg_button: #1c74e9;
+	--bg_button_disabled: #c4c9cE;
+	--bg_button_hover: #3c94f9;
+	--bg_button_active: #0c54c9;
+	--bg_saturday: #0000ff22;
+	--bg_sunday: #ff000022;
+	--border_negative_button: #1c74e999;
+	--bg_negative_button_hover: #ffffff55;
+	--bg_nvegative_button_active: #00000033;
+	--font_form_highlighted: #ab1c23;
+	--bar_form: #ccbbbb;
+	--event_selected: #f4a9ae;
+	--row_event_space: 10px; /* eventの下を少し空けることで選択しやすく */
+	--row_height: calc(7ex + var(--row_event_space));
+	--header_height: 50px;
 }
 *{
-    margin: 0;
-    padding: 0;
-    font-family: 'Noto Sans JP', sans-serif;
+	margin: 0;
+	padding: 0;
+	font-family: 'Noto Sans JP', sans-serif;
 }
 html {
-    overflow-y: scroll;
-    /* IE, Edge 対応 */
-    -ms-overflow-style: none;
-    /* Firefox 対応 */
-    scrollbar-width: none;
+	overflow-y: scroll;
+	/* IE, Edge 対応 */
+	-ms-overflow-style: none;
+	/* Firefox 対応 */
+	scrollbar-width: none;
 }
 /* Chrome, Safari 対応 */
 html::-webkit-scrollbar {
-    display: none;
+	display: none;
 }
 
 header{
-    display: flex;
-    padding: 0 5px;
+	display: flex;
+	padding: 0 5px;
 
-    max-height: var(--header_height);
-    min-height: var(--header_height);
+	max-height: var(--header_height);
+	min-height: var(--header_height);
 
-    background: var(--bg_header);
-    color: var(--font_light);
-    align-items: center;
+	background: var(--bg_header);
+	color: var(--font_light);
+	align-items: center;
 }
 form[name="currentDate"] input{
-    display: inline-block;
-    vertical-align: middle;
+	display: inline-block;
+	vertical-align: middle;
 }
 .hide{
-    display: none;
+	display: none;
 }
 .navigate_day{
-    color: var(--font_light)!important;
-    min-width: 2em;
-    padding: 3px 0!important;
-    margin: 0!important;
+	color: var(--font_light)!important;
+	min-width: 2em;
+	padding: 3px 0!important;
+	margin: 0!important;
 }
 .github_url{
-    margin-left: auto;
+	margin-left: auto;
 }
 a:link{
-    color: var(--font_lightred);
+	color: var(--font_lightred);
 }
 a:visited{
-    color: var(--font_red);
+	color: var(--font_red);
 }
 a:hover{
-    color: var(--font_light);
+	color: var(--font_light);
 }
 body{
-    height: 100vh;
-    /* 画面いっぱいにするため. https://qiita.com/KokiSakano/items/d73c89b9eb9b6e605c22 */
-    min-height: 100lvh;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
+	height: 100vh;
+	/* 画面いっぱいにするため. https://qiita.com/KokiSakano/items/d73c89b9eb9b6e605c22 */
+	min-height: 100lvh;
+	display: flex;
+	flex-direction: column;
+	padding: 0;
 }
 main{
-    display: flex;  /* 横並びにするため */
-    width: 100%;
+	display: flex;  /* 横並びにするため */
+	width: 100%;
 
-    flex-grow: 1;   /* 画面いっぱいにするため */
+	flex-grow: 1;   /* 画面いっぱいにするため */
 }
 #timeline{
-    min-width: 65%;
-    max-height: calc(100vh - var(--header_height));
-    box-sizing: border-box;
-    padding-bottom: 0;
-    
-    display:flex;
-    flex-flow: column;
+	min-width: 65%;
+	max-height: calc(100vh - var(--header_height));
+	box-sizing: border-box;
+	padding-bottom: 0;
+	
+	display:flex;
+	flex-flow: column;
 }
 #timeline_header{
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
 }
 #timeline_header div{
-    flex-grow: 1;
-    text-align: center;
-    border-bottom: 6px solid var(--underbar_time);
-    width: 0;
-    overflow: hidden;
-    box-sizing: border-box;
+	flex-grow: 1;
+	text-align: center;
+	border-bottom: 6px solid var(--underbar_time);
+	width: 0;
+	overflow: hidden;
+	box-sizing: border-box;
 }
 #timeline_header div:nth-child(even) {
-    border-bottom: 6px solid var(--underbar_time_even);
+	border-bottom: 6px solid var(--underbar_time_even);
 }
 #timeline_header .timeline_header_label {
-    flex-grow: 0;
-    width: 15%;
-    padding: 0 12px;
+	flex-grow: 0;
+	width: 15%;
+	padding: 0 12px;
 }
 
 #timeline_main{
-    width: 100%;
-    box-sizing: border-box;
-    overflow-y: scroll;
+	width: 100%;
+	box-sizing: border-box;
+	overflow-y: scroll;
 
-    /* IE, Edge 対応 */
-    -ms-overflow-style: none;
-    /* Firefox 対応 */
-    scrollbar-width: none;
+	/* IE, Edge 対応 */
+	-ms-overflow-style: none;
+	/* Firefox 対応 */
+	scrollbar-width: none;
 }
 /* Chrome, Safari 対応 */
 #timeline_main::-webkit-scrollbar {
-    display: none;
+	display: none;
 }
 
 .timeline_rows{
-    width: 100%;
-    border-bottom: 2px solid var(--underbar_row_sep);
+	width: 100%;
+	border-bottom: 2px solid var(--underbar_row_sep);
 }
 .timeline_rows_html{
-    width: 100%;
-    border-bottom: 2px solid var(--underbar_row_sep);
+	width: 100%;
+	border-bottom: 2px solid var(--underbar_row_sep);
 }
 .timeline_row{
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    height: var(--row_height);
-    border-bottom: 1px solid var(--vertical_bar_timeline);
-    overflow: hidden;
-    transition: height 0.1s ease-out;
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+	height: var(--row_height);
+	border-bottom: 1px solid var(--vertical_bar_timeline);
+	overflow: hidden;
+	transition: height 0.1s ease-out;
 }
 .timeline_label_date.saturday{
-    background-color: var(--bg_saturday);
+	background-color: var(--bg_saturday);
 }
 .timeline_label_date.sunday{
-    background-color: var(--bg_sunday);
+	background-color: var(--bg_sunday);
 }
 .timeline_row div{
-    box-sizing: border-box;
+	box-sizing: border-box;
 }
 .timeline_row_hide{
-    /*display: none;*/
-    height: 0ex;
-    border: none;
+	/*display: none;*/
+	height: 0ex;
+	border: none;
 }
 .timeline_row .timeline_label {
-    flex-grow: 0;
-    width: 15%;
-    padding: 0 11px;
-    border-right: 1px solid var(--vertical_bar_label);
-    position: relative; /* afterを内部に入れるため */
-    overflow: hidden;
-    cursor: pointer;
-    line-height: calc(var(--row_height) / 3);   /* 3行入れたい */
+	flex-grow: 0;
+	width: 15%;
+	padding: 0 11px;
+	border-right: 1px solid var(--vertical_bar_label);
+	position: relative; /* afterを内部に入れるため */
+	overflow: hidden;
+	cursor: pointer;
+	line-height: calc(var(--row_height) / 3);   /* 3行入れたい */
 }
 /* 閉じた状態の矢印描画 */
 .timeline_label:after{
-    content:"";
-    display:block;
-    width:8px;
-    height:8px;
-    border-top: var(--font_gray) 2px solid;
-    border-right: var(--font_gray) 2px solid;
-    transform: rotate(135deg);
-    position: absolute;
-    right: 4%;
-    top: 0;
-    bottom: 6%;
-    margin: auto;
+	content:"";
+	display:block;
+	width:8px;
+	height:8px;
+	border-top: var(--font_gray) 2px solid;
+	border-right: var(--font_gray) 2px solid;
+	transform: rotate(135deg);
+	position: absolute;
+	right: 4%;
+	top: 0;
+	bottom: 6%;
+	margin: auto;
 }
 /*開いた状態の矢印描画*/
 .timeline_label_close:after{
-    content: "";
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-top: var(--font_gray) 2px solid;
-    border-right: var(--font_gray) 2px solid;
-    transform: rotate(-45deg);
-    position: absolute;
-    right: 4%;
-    top: 0;
-    bottom: 6%;
-    margin: auto;
+	content: "";
+	display: block;
+	width: 8px;
+	height: 8px;
+	border-top: var(--font_gray) 2px solid;
+	border-right: var(--font_gray) 2px solid;
+	transform: rotate(-45deg);
+	position: absolute;
+	right: 4%;
+	top: 0;
+	bottom: 6%;
+	margin: auto;
 }
 .timeline_row .timeline_label_date {
-    flex-grow: 0;
-    width: 15%;
-    padding: 0 11px;
-    border-right: 1px solid var(--vertical_bar_label);
-    overflow: hidden;
-    color: var(--font_gray);
+	flex-grow: 0;
+	width: 15%;
+	padding: 0 11px;
+	border-right: 1px solid var(--vertical_bar_label);
+	overflow: hidden;
+	color: var(--font_gray);
 }
 .timeline_selected{
-    background-color: var(--bg_timeline_selected);
+	background-color: var(--bg_timeline_selected);
 }
 .timeline_cell{
-    position: relative;
-    overflow: visible;
-    flex-grow: 1;
-    width: 0;
-    border-right: 1px solid var(--vertical_bar_timeline);
-    /* ↑ここの太さを変える場合はプログラムの方の「cellのboader分だけここで足している。」 の部分も変更が必要*/
-    box-sizing: border-box;
-    height: var(--row_height);
+	position: relative;
+	overflow: visible;
+	flex-grow: 1;
+	width: 0;
+	border-right: 1px solid var(--vertical_bar_timeline);
+	/* ↑ここの太さを変える場合はプログラムの方の「cellのboader分だけここで足している。」 の部分も変更が必要*/
+	box-sizing: border-box;
+	height: var(--row_height);
 }
 .timeline_cell:nth-child(even){
-    /* 選択まで色が変わっちゃうから中止。継承しないようにする？ */
-    /*background-color: var(--bg_even_cell);*/
+	/* 選択まで色が変わっちゃうから中止。継承しないようにする？ */
+	/*background-color: var(--bg_even_cell);*/
 }
 .timeline_event{
-    overflow: hidden;
-    background-color: var(--bg_timeline_event);
-    border-left: 2px solid var(--vertical_bar_event);
-    height: calc(100% - var(--row_event_space));
-    cursor: pointer;
-    box-sizing: border-box;
+	overflow: hidden;
+	background-color: var(--bg_timeline_event);
+	border-left: 2px solid var(--vertical_bar_event);
+	height: calc(100% - var(--row_event_space));
+	cursor: pointer;
+	box-sizing: border-box;
 }
 .timeline_event div{
-    overflow: visible;
-    width: 100vw;
-    line-height: 120%;
-    
+	overflow: visible;
+	width: 100vw;
+	line-height: 120%;
+	
 }
 .timeline_event_selected{
-    background-color: var(--event_selected);
+	background-color: var(--event_selected);
 }
 
 input {
-    font-size: 1em;
+	font-size: 1em;
 }
 form, select {
-    font-size: 1.2em;
+	font-size: 1.2em;
 }
 
 form *{
-    margin: 2px 0;
+	margin: 2px 0;
 }
 
 button, form input[type="button"]{
-    background-color: var(--bg_button);
-    color: var(--font_light);
-    padding: 5px 10px;
-    margin: 2px 5px;
-    text-align: center;
-    border: solid 0px var(--bg_transparent);
-    border-radius: 5px;        /* 角丸指定 */
-    cursor: pointer;
-    box-sizing: border-box;
-    transition: background-color 0.1s ease-out, color 0.1s ease-out;
+	background-color: var(--bg_button);
+	color: var(--font_light);
+	padding: 5px 10px;
+	margin: 2px 5px;
+	text-align: center;
+	border: solid 0px var(--bg_transparent);
+	border-radius: 5px;		/* 角丸指定 */
+	cursor: pointer;
+	box-sizing: border-box;
+	transition: background-color 0.1s ease-out, color 0.1s ease-out;
 }
 button:disabled, form input[type="button"]:disabled{
-    background-color: var(--bg_button_disabled)!important;
-    cursor: not-allowed;
+	background-color: var(--bg_button_disabled)!important;
+	cursor: not-allowed;
 }
 button:hover, form input[type="button"]:hover{
-    background-color: var(--bg_button_hover);
+	background-color: var(--bg_button_hover);
 }
 button:active, form input[type="button"]:active{
-    background-color: var(--bg_button_active);
+	background-color: var(--bg_button_active);
 }
 button.negative, form input[type="button"].negative{
-    font-size: smaller;
-    background-color: var(--bg_transparent);
-    color: var(--bg_button);
+	font-size: smaller;
+	background-color: var(--bg_transparent);
+	color: var(--bg_button);
 }
 button.negative:hover, form input[type="button"].negative:hover{
-    background-color: var(--bg_negative_button_hover);
+	background-color: var(--bg_negative_button_hover);
 }
 button.negative:active, form input[type="button"].negative:active{
-    background-color: var(--bg_nvegative_button_active);
+	background-color: var(--bg_nvegative_button_active);
 }
 
 form label .caption{
-    font-weight: bold;
+	font-weight: bold;
 }
 form label .caption::before{
-    content: "# ";
+	content: "# ";
 }
 
 #group_list ul{
-    padding-left: 2px;
-    margin: 0 2px;
+	padding-left: 2px;
+	margin: 0 2px;
 }
 #group_list li{
-    padding: 5px 5px;
-    list-style-position: inside;
+	padding: 5px 5px;
+	list-style-position: inside;
 }
 
 .group{
-    cursor: pointer;
-    list-style-type: circle;
-    transition: all 0.3s ease-out;
+	cursor: pointer;
+	list-style-type: circle;
+	transition: all 0.3s ease-out;
 }
 /* URL表示の際に、bulletまで色が変わるのを防ぐ */
 .group::marker{
-    color: var(--font_light);
+	color: var(--font_light);
 }
 .group:hover {
-    background-color: var(--bg_list_dark);
+	background-color: var(--bg_list_dark);
 }
 .group:active{
-    transition: none;
-    background-color: var(--bg_list_active);
+	transition: none;
+	background-color: var(--bg_list_active);
 }
 .group_selected{
-    background-color: var(--bg_list_selected);
+	background-color: var(--bg_list_selected);
 }
 .group_selected:hover{
-    background-color: var(--bg_list_selected);
+	background-color: var(--bg_list_selected);
 }
 
 details{
-    cursor: pointer;
-    margin-top: 5px;
-    margin-left: 2px;
+	cursor: pointer;
+	margin-top: 5px;
+	margin-left: 2px;
 }
 details>summary {
-    list-style-type: disc;
+	list-style-type: disc;
 }
 /* 閉じた状態の矢印描画 */
 details>summary::after {
-    display: inline-block;
-    content: ">";
-    color: var(--font_lightgray);
-    font-size: smaller;
-    margin-left: 10px;
-    transform: scale(2, 1) rotate(90deg);
+	display: inline-block;
+	content: ">";
+	color: var(--font_lightgray);
+	font-size: smaller;
+	margin-left: 10px;
+	transform: scale(2, 1) rotate(90deg);
 }
 /*開いた状態の矢印描画*/
 details[open]>summary::after {
-    display: inline-block;
-    content: "<";
-    color: var(--font_lightgray);
-    font-size: smaller;
-    margin-left: 10px;
-    transform: scale(2, 1) rotate(90deg);
+	display: inline-block;
+	content: "<";
+	color: var(--font_lightgray);
+	font-size: smaller;
+	margin-left: 10px;
+	transform: scale(2, 1) rotate(90deg);
 }
 
 .link{
-    color: var(--font_link_blue);
+	color: var(--font_link_blue);
 }
 .container{
-    padding: 10px 5px;
-    box-sizing: border-box;
+	padding: 10px 5px;
+	box-sizing: border-box;
 }
 /*
 .date_and_time input[type="date"]{
-    width: 9ch;
+	width: 9ch;
 }
 .date_and_time input[type="time"]{
-    width: 5.5ch;
+	width: 5.5ch;
 }
 */
 .select {
-    min-width: 80%;
+	min-width: 80%;
 }
 #group_list{
-    background: var(--bg_list);
-    color: white;
-    
-    max-height: calc(100vh - var(--header_height));
-    min-width: 15%;
-    box-sizing: border-box;
-    overflow-y: auto;
+	background: var(--bg_list);
+	color: white;
+	
+	max-height: calc(100vh - var(--header_height));
+	min-width: 15%;
+	box-sizing: border-box;
+	overflow-y: auto;
 }
 
 #form_container{
-    background-color: var(--bg_form);
-    min-width: 20%;
-    overflow-y: auto;
+	background-color: var(--bg_form);
+	min-width: 20%;
+	overflow-y: auto;
 }
 
 #form_container.editing{
-    background-color: var(--bg_form_editing);
+	background-color: var(--bg_form_editing);
 }
 
 #name_fetch_container{
@@ -450,128 +452,128 @@ details[open]>summary::after {
 }
 
 .bar_form{
-    background: var(--bar_form);
-    width: 100%;
-    height: 1px;
-    margin: 5px 0;
+	background: var(--bar_form);
+	width: 100%;
+	height: 1px;
+	margin: 5px 0;
 }
 #shiftButton{
-    color: var(--font_form_highlighted);
-    font-weight: bold;
+	color: var(--font_form_highlighted);
+	font-weight: bold;
 }
 #warning{
-    color: var(--font_form_highlighted);
-    font-size: smaller;
+	color: var(--font_form_highlighted);
+	font-size: smaller;
 }
 
 #text_form input{
-    width:90%;
-    margin-top: 1.2em;
+	width:90%;
+	margin-top: 1.2em;
 }
 #text_form input + label{
-    position: relative;
-    display: inline-block;
-    font-size: 1em;
-    color: var(--font_lightgray);
-    width: 0px;
-    left: -90%;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-    pointer-events: none;   /* これ入れないと、ラベルが選択されてテキストエリアがクリックできない */
+	position: relative;
+	display: inline-block;
+	font-size: 1em;
+	color: var(--font_lightgray);
+	width: 0px;
+	left: -90%;
+	white-space: nowrap;
+	transition: all 0.15s ease;
+	pointer-events: none;   /* これ入れないと、ラベルが選択されてテキストエリアがクリックできない */
 }
 #text_form input.required + label{
-    color: var(--font_form_highlighted);
+	color: var(--font_form_highlighted);
 }
 #text_form input:not(:placeholder-shown) + label, #text_form input:focus + label{
-    color: var(--font_dark);
-    transform: translateY(-100%) scale(0.75);
+	color: var(--font_dark);
+	transform: translateY(-100%) scale(0.75);
 }
 
 .checkbox_label {
-    cursor: pointer;
-    font-size: smaller;
+	cursor: pointer;
+	font-size: smaller;
 }
 
 #toast {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-    transition: all 0.5s;
+	display: flex;
+	width: 100vw;
+	height: 100vh;
+	transition: all 0.5s;
 
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 9999;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 9999;
 
-    opacity: 0;
+	opacity: 0;
 
-    align-items: center;
-    justify-content: center;
+	align-items: center;
+	justify-content: center;
 
-    pointer-events: none;   /* これ入れないと、ラベルが選択されてテキストエリアがクリックできない */
+	pointer-events: none;   /* これ入れないと、ラベルが選択されてテキストエリアがクリックできない */
 }
 #toast_text{
-    background-color: var(--bg_toast);
-    color: var(--font_light);
-    font-size: larger;
-    padding: 5px 10px;
-    min-width: 10vw;
-    text-align: center;
-    border: solid 0px var(--bg_toast);     /* 枠線指定 */
-    border-radius: 5px;        /* 角丸指定 */
-    pointer-events: none;   /* 選択できないように */
+	background-color: var(--bg_toast);
+	color: var(--font_light);
+	font-size: larger;
+	padding: 5px 10px;
+	min-width: 10vw;
+	text-align: center;
+	border: solid 0px var(--bg_toast);	 /* 枠線指定 */
+	border-radius: 5px;		/* 角丸指定 */
+	pointer-events: none;   /* 選択できないように */
 }
 #toast.active{
-    opacity: 1;
-    /*pointer-events: auto;*/
+	opacity: 1;
+	/*pointer-events: auto;*/
 }
 
 #mouseStalker{
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    border-radius: 10%;
-    background-color: white;
-    z-index: 10000;
-    pointer-events: none;
+	opacity: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	border-radius: 10%;
+	background-color: white;
+	z-index: 10000;
+	pointer-events: none;
 }
 #mouseStalker.active{
-    opacity: 1;
+	opacity: 1;
 }
 
 #loading {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-    transition: all 1s;
-    background-color: var(--bg_loading);
-    color: var(--font_light);
-    font-size: larger;
+	display: flex;
+	width: 100vw;
+	height: 100vh;
+	transition: all 1s;
+	background-color: var(--bg_loading);
+	color: var(--font_light);
+	font-size: larger;
 
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 9999;
-    
-    align-items: center;
-    justify-content: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 9999;
+	
+	align-items: center;
+	justify-content: center;
 }
 .circle{
-    width:50px;
-    height:50px;
-    border-radius:100px;
-    border:5px solid var(--font_light);
-    border-top-color: var(--bg_loading);
-    box-sizing:border-box;
-    animation:circle 1s linear infinite;
-    -webkit-animation:circle 1s linear infinite;
+	width:50px;
+	height:50px;
+	border-radius:100px;
+	border:5px solid var(--font_light);
+	border-top-color: var(--bg_loading);
+	box-sizing:border-box;
+	animation:circle 1s linear infinite;
+	-webkit-animation:circle 1s linear infinite;
   }
 @keyframes circle{
-    0%{transform:rotate(0deg)}
-    100%{transform:rotate(360deg)}
+	0%{transform:rotate(0deg)}
+	100%{transform:rotate(360deg)}
 }
 @-webkit-keyframes circle{
-    0%{-webkit-transform:rotate(0deg)}
-    100%{-webkit-transform:rotate(360deg)}
+	0%{-webkit-transform:rotate(0deg)}
+	100%{-webkit-transform:rotate(360deg)}
 }
