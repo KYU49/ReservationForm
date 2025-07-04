@@ -759,6 +759,24 @@
             this.model.addEventListener(Model.CONST.REFLECT_RESERVATION_TIME, (event) =>{
                 this.dispatchEvent({type: Controller.CONST.REFLECT_RESERVATION_TIME, startHM: event.startHM, endHM: event.endHM})
             });
+
+            // 長時間操作がなかったら更新
+            {
+                const idleLimit = 60 * 1000 * 60   // 60 sec x 60 = 60 min
+                function reload() {
+                    location.reload();
+                }
+                let timer = setTimeout(reload, idleLimit);
+                function resetTimer() {
+                    clearInterval(timer);
+                    timer = setTimeout(reload, idleLimit);
+                }
+                // 何らかの操作があったら、reloadしない。
+                document.addEventListener("mousemove", resetTimer);
+                document.addEventListener("keypress", resetTimer);
+                document.addEventListener("click", resetTimer);
+
+            }
         }
         // 日付の変更を呼び出し、今日の日付を設定。initは初期化用
         dateChanged(value, init = false){
