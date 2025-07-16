@@ -1667,7 +1667,7 @@
                         const explain = this.model.rowsExplain[this.model.rowsNameWoHtml.indexOf(name)];
                         ele.title = name + ": " + explain;
                         ele.classList.add("timeline_label");
-                        this.model.isRowsOpened.push(false);
+                        //this.model.isRowsOpened.push(false);  //FIXME この処理何？これのせいでswitchGroupの途中でisRowsOpenedの中身が変わってしまう不具合があったため、コメントアウト。
                         ele.addEventListener("click", (event) => {
                             let rows = ele.parentElement.parentElement;
                             let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
