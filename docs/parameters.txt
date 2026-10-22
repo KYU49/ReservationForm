@@ -89,4 +89,4 @@ $START_TIME = 8
 $END_TIME = 20
 $FOLD_DAYS = 7
 $SMALLEST_MIN = 30
-$DATABASE_URL = https://script.google.com/macros/s/AKfycbxW9gidpC09rtSFu6zkB4udgJkkEt5VKQ6FNfwqcEhYHqy8uwJ2uZv52EKITlDoo8qU/exec
+$DATABASE_URL = https://script.google.com/macros/s/AKfycbzxSZBX-sQRmnhvpsbszzU6VslbekC4nt9qLa3bIrIhaMF31HD9Mxp1ObY5FrcStcC8/exec
