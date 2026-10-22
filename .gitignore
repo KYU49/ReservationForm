@@ -1,3 +1,4 @@
 ignore/
 httpListener.ps1
 run.bat
+.vscode

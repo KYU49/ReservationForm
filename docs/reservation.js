@@ -32,6 +32,7 @@
     let SERVER_ERROR = "サーバーとの通信でエラーが発生しました。";
     let DELETE_CONFIRMATION = "の予約を削除します。";
     let ERROR_TIME = "開始時間と終了時間が逆転しています。";
+    let ALERT_CHANGE = "前回と異なる名前が入力されています。\n予約/変更してよろしいですか？";
     const PASS_WORD = "password";
 
     const isDebug = false;   // trueでサーバー接続せずに、ハードコーディングした適当なテストデータを読み込む
@@ -116,14 +117,23 @@
         */
         static time2cell(time, currentDate){
             let cellNumInRow = Math.floor( (time.getHours() + time.getMinutes() / 60.0 - START_TIME) * 60 / SMALLEST_MIN );
+            // END_TIMEよりあとに時間が設定されていた場合、翌日のcellと判定されてしまうのを防ぐため、オーバーした分を引く
+            if(cellNumInRow > (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN){
+                cellNumInRow = (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN;
+            }
+            // 逆にSTART_TIMEより前に時間が設定されていた場合も修正
+            if(cellNumInRow < 0){
+                cellNumInRow = 0;
+            }
             const currentDateYmd = new Date(currentDate);
             currentDateYmd.setHours(0);
             currentDateYmd.setMinutes(0);
             const timeYmd = new Date(time);
             timeYmd.setHours(0);
             timeYmd.setMinutes(0);
+            // currentDateの何個目のセルか取得したいのに、翌日の時間が設定されていた場合は、その分セルを追加する必要がある。
             const dayOffset = (timeYmd.getTime() - currentDateYmd.getTime()) / 1000 / 60 / 60 / 24;
-            const cellNum = cellNumInRow + (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN * dayOffset
+            let cellNum = cellNumInRow + (END_TIME - START_TIME + 1) * 60 / SMALLEST_MIN * dayOffset
             return cellNum;
         }
         
@@ -243,6 +253,7 @@
                 SET_RESERVATION_TIME: "setReservationTime",
                 REFLECT_RESERVATION_ROW: "reflectReservationRow",
                 SET_RESERVATION_TEXT_CONTENTS: "setName",
+                SET_NAME_FETCH_RESULTS: "setNameFetchResults",
                 FINISH_INITIAL_FETCH: "finishInitialFetch",
                 REFLECT_RESERVATION_BUTTON: "reflectReservationButton",
                 LAST_OPENED_GROUP: "lastOpenedGroup",
@@ -268,6 +279,7 @@
             this.leftPane = [];     // 左ペイン。[{key: "hoge", name: "hoge" , arr: [{key: "hoge_fuga", name: "huga", arr: ["装置1", "装置2"]}, {}]}, ]
             this.rightPane = [];    // 右ペイン。[{key: "hoge", name: "ほげ", required: false, display: true}, ...], displayはtimelineに表示するか否か
             this.eventContents = [];    // 右ペインの項目のうち、タイムラインに表示する項目のkey (name)
+            this.alertChange = [];    // 右ペインの項目のうち、前回と変更があった場合に警告を表示する項目(名前などに入れておくと、別の人の予定を誤って変更する可能性が減る)
         }
 
         // idからEventItemとどの機器のEventItemかを返す
@@ -337,6 +349,13 @@
             this.dispatchEvent({type: Model.CONST.SET_RESERVATION_TEXT_CONTENTS, user: user});
         }
 
+        // 今日以降の予約リストを受取り、それをViewに渡して描画させる。
+        setNameFetchResults(resultJson){
+            if(resultJson && resultJson.length > 0){
+                this.dispatchEvent({type: Model.CONST.SET_NAME_FETCH_RESULTS, results: resultJson});
+            }
+        }
+
         enterChangeMode(eventId){    // -1を渡すと編集モードから抜ける
             this.currentEventId = eventId;
             this.dispatchEvent({type: Model.CONST.REFLECT_RESERVATION_BUTTON, eventId: eventId});
@@ -382,6 +401,10 @@
                         if(arr[2].includes("+")){
                             display = true;
                             this.eventContents.push(arr[1]);    // ここで、タイムラインに表示するものを確認(本当はControllerでやりたい)
+                        }
+                        if(arr[2].includes("!")){
+                            display = true;
+                            this.alertChange.push(arr[1]);    // 変更があった場合にalertを出す項目(本当はControllerでやりたい)
                         }
                     }
                     this.rightPane.push(
@@ -504,13 +527,19 @@
             window.localStorage.setItem("google", google && google.checked);
             window.localStorage.setItem("outlook", outlook && outlook.checked);
         }
-        restoreSavedName(){
+        async restoreSavedName(){
             let flag = true;
             for(let key in this.currentEvent.others){
                 const value = window.localStorage.getItem(key);
                 if(value){
                     this.setReservationTextContent(key, value);
                     flag = false;
+
+                    // 名前を取得した際に、その人が予約した直近の予定を取得する。
+                    if(key == "name"){
+                        const resultJson = await this.loadNameFetch(value);
+                        this.setNameFetchResults(resultJson);
+                    }
                 }
             }
             if(PASS_WORD in this.currentEvent){
@@ -524,7 +553,7 @@
                 // reservationのテキストコンテンツのうち、必須項目が抜けてる場合にアラートを表示するため。
                 this.dispatchEvent({type: Model.CONST.SET_RESERVATION_TEXT_CONTENTS, user: {}});
             }
-            
+
             // チェックボックスの復元
             const google = document.getElementById("google");
             const outlook = document.getElementById("outlook");
@@ -556,6 +585,21 @@
                 resultJson = await response.json();
             }
             console.log("Response:", resultJson);
+            return resultJson;
+        }
+        async loadNameFetch(name){
+            let resultJson = {};
+            const startYmd = Utility.date2ymd(this.currentDate);
+            const params = {type: "name_fetch", start: startYmd + "0000", name: name};
+            console.log("Name_Fetch: ", params);
+            const response = await fetch(DATABASE_URL, {
+                method: "post",
+                header: {
+                    "content-Type": "application/json"
+                },
+                body: JSON.stringify(params)
+            }).catch((e) => this.dispatchEvent({type: Model.CONST.TOAST, text: e + "\n" + SERVER_ERROR}));
+            resultJson = await response.json();
             return resultJson;
         }
         async saveEventFetch(){
@@ -689,16 +733,40 @@
                 this.dispatchEvent({type: Controller.CONST.REND_RIGHT_PANE, rightPane: event.rightPane});
                 this.dispatchEvent({type: Controller.CONST.REND_LEFT_PANE, leftPane: event.leftPane});
 
+                const query = new URLSearchParams(window.location.search);
+                const requestedPage = query.get("page");
+                const availableGroups = this.model.leftPane.flatMap((building) =>
+                    (building.arr || [])
+                        .filter((group) => Array.isArray(group.arr))
+                        .map((group) => ({building, group}))
+                );
+                const hierarchicalMatches = availableGroups.filter(({building, group}) =>
+                    group.key === requestedPage || `${building.name}/${group.name}` === requestedPage
+                );
+                const nameMatches = availableGroups.filter(({group}) => group.name === requestedPage);
+                const requestedGroup = hierarchicalMatches.length === 1
+                    ? hierarchicalMatches[0].group
+                    : nameMatches.length === 1 ? nameMatches[0].group : null;
                 const lastOpenedGroup = this.model.getLastOpenedGroup();
-                if(lastOpenedGroup){
+                if(requestedGroup){
+                    this.model.currentGroup = requestedGroup.key;
+                }else if(lastOpenedGroup){
                     this.model.currentGroup = lastOpenedGroup;
                 }else{
                     this.model.currentGroup = this.model.leftPane[0]?.arr[0]?.key;
                 }
 
-                this.dateChanged(Utility.getTodayAsYMD(0, true), true); // todayを読み込むと、timelineは自動取得
+                const requestedYmd = query.get("ymd");
+                const requestedDate = requestedYmd && /^\d{8}$/.test(requestedYmd)
+                    ? `${requestedYmd.slice(0, 4)}-${requestedYmd.slice(4, 6)}-${requestedYmd.slice(6, 8)}`
+                    : "";
+                const parsedRequestedDate = requestedDate ? new Date(`${requestedDate}T00:00:00`) : null;
+                const isValidRequestedDate = parsedRequestedDate &&
+                    !Number.isNaN(parsedRequestedDate.getTime()) &&
+                    Utility.date2ymd(parsedRequestedDate) === requestedYmd;
+                this.dateChanged(isValidRequestedDate ? requestedDate : Utility.getTodayAsYMD(0, true), true);
 
-                this.switchGroup(this.model.currentGroup);
+                this.switchGroup(this.model.currentGroup, false);
 
                 this.model.setReservationDate(new Date(), new Date());
                 // hとmを分ける処理を介してmodelに送る
@@ -744,10 +812,55 @@
             this.model.addEventListener(Model.CONST.REFLECT_RESERVATION_TIME, (event) =>{
                 this.dispatchEvent({type: Controller.CONST.REFLECT_RESERVATION_TIME, startHM: event.startHM, endHM: event.endHM})
             });
+
+            // 長時間操作がなかったら更新
+            {
+                const idleLimit = 60 * 1000 * 60   // 60 sec x 60 = 60 min
+                function reload() {
+                    location.reload();
+                }
+                let timer = setTimeout(reload, idleLimit);
+                function resetTimer() {
+                    clearInterval(timer);
+                    timer = setTimeout(reload, idleLimit);
+                }
+                // 何らかの操作があったら、reloadしない。
+                document.addEventListener("mousemove", resetTimer);
+                document.addEventListener("keypress", resetTimer);
+                document.addEventListener("click", resetTimer);
+
+            }
         }
         // 日付の変更を呼び出し、今日の日付を設定。initは初期化用
-        dateChanged(value, init = false){
+        dateChanged(value, init = false, resetYmd = false){
             this.model.setCurrentDate(value, init);
+            if(!init){
+                if(resetYmd){
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete("ymd");
+                    window.history.replaceState(window.history.state, "", url);
+                }else{
+                    this.updateUrlParameters(true, false);
+                }
+            }
+        }
+
+        updateUrlParameters(updateYmd = false, updatePage = false){
+            const url = new URL(window.location.href);
+            if(updateYmd){
+                url.searchParams.set("ymd", Utility.date2ymd(this.model.currentDate));
+            }
+
+            if(updatePage){
+                for(const building of this.model.leftPane){
+                    const group = (building.arr || []).find((item) => item.key === this.model.currentGroup && Array.isArray(item.arr));
+                    if(group){
+                        url.searchParams.set("page", `${building.name}/${group.name}`);
+                        break;
+                    }
+                }
+            }
+            window.history.replaceState(window.history.state, "", url);
         }
         
         // 現在のページを開き直して更新する。
@@ -890,7 +1003,7 @@
         }
 
         // 左ペインクリックや初回起動時(Rowのデータの変更が入る)
-        switchGroup(groupName){
+        switchGroup(groupName, syncUrl = true){
             this.model.rowsName = this.model.getRowsInGroup(groupName);
             this.model.rowsNameWoHtml = this.model.getRowsInGroup(groupName, true);
             this.model.rowsExplain = this.model.getRowsExplainInGroup(groupName);
@@ -899,17 +1012,19 @@
                 this.model.currentEvent.row = this.model.rowsNameWoHtml[0];
             }
             this.model.currentGroup = groupName;
-
+            if(syncUrl){
+                this.updateUrlParameters(false, true);
+            }
             // Groupの選択処理(単に背景色を替えて選択中にするだけ)
             this.model.currentEvent.group = groupName;
             this.dispatchEvent({type: Controller.CONST.GROUP_SELECTED, groupName: groupName});
             
             this.dispatchEvent({type: Controller.CONST.REND_ROWS, rowsName: this.model.rowsName});
             this.dispatchEvent({type: Controller.CONST.RESTORE_SELECT});
-            this.loadEvents(0, FOLD_DAYS - 1, groupName);    // FIXME DataChangedの方と重複してる
+            this.loadEvents(0, FOLD_DAYS - 1, groupName);    //FIXME DataChangedの方と重複してる
 
             for(let i = 0; i < this.model.isRowsOpened.length; i++){
-                if(this.model.isRowsOpened[i]){ // 負荷軽減のため、開いているものだけに処理
+                if(this.model.isRowsOpened[i] || this.model.rowsName.filter(row => !row.startsWith("html:")).length == 1){ // 負荷軽減のため、開いているものだけに処理。また、そのページの要素が1つだけ(html要素を除く)なら開く。
                     this.openRows(i, true);
                 }
             }
@@ -917,7 +1032,7 @@
         
         async loadEvents(dayOffsetStart, dayOffsetEnd, group){
             this.dispatchEvent({type: Controller.CONST.NOW_LOADING_START});
-            const resultJson = await this.model.loadEventsFetch(dayOffsetStart, dayOffsetEnd, group);
+            const resultJson = await this.model.loadEventsFetch(dayOffsetStart, dayOffsetEnd, group + "");  // + ""はundefined対策
             console.log("Fetched Events:", resultJson);
             
             this.model.events.splice(0);    // 古い予定を削除
@@ -937,10 +1052,28 @@
         }
 
         async saveEvent(){
-            //FIXME 始まりと終わりが逆になっていた場合、ここで警告を出してストップ。
+            // 始まりと終わりが逆になっていた場合、ここで警告を出してストップ。
             if(this.model.currentEvent.start > this.model.currentEvent.end){
                 this.dispatchEvent({type: Model.CONST.TOAST, text: ERROR_TIME});
                 return;
+            }
+
+            if(this.model.alertChange.length > 0){  // 前回保存していた値と、今回の値が異なる場合は警告
+                let flag = false;
+                for(let i = 0; i < this.model.alertChange.length; i++){
+                    if(
+                        window.localStorage.hasOwnProperty(this.model.alertChange[i]) &&
+                        this.model.currentEvent.others[this.model.alertChange[i]] != window.localStorage.getItem(this.model.alertChange[i])
+                    ){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag){
+                    if(!window.confirm(ALERT_CHANGE)){
+                        return;
+                    }
+                }
             }
 
             this.model.storeName();
@@ -955,6 +1088,7 @@
             if(fe.outlook.checked){
                 this.addOutlookCalendar();
             }
+            this.unselectEvent()
             this.dispatchEvent({type: Model.CONST.TOAST, text: resultJson[1]});
         }
         async deleteEvent(){
@@ -963,6 +1097,26 @@
                 this.dispatchEvent({type: Controller.CONST.NOW_LOADING_END});
                 return;
             }
+            
+            if(this.model.alertChange.length > 0){  // 前回保存していた値と、今回の値が異なる場合は警告
+                let flag = false;
+                for(let i = 0; i < this.model.alertChange.length; i++){
+                    if(
+                        window.localStorage.hasOwnProperty(this.model.alertChange[i]) &&
+                        this.model.currentEvent.others[this.model.alertChange[i]] != window.localStorage.getItem(this.model.alertChange[i])
+                    ){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag){
+                    if(!window.confirm(ALERT_CHANGE)){
+                        this.dispatchEvent({type: Controller.CONST.NOW_LOADING_END});
+                        return;
+                    }
+                }
+            }
+
             const resultJson = await this.model.deleteEventFetch();
             this.unselectEvent();
             this.reloadTimeline();
@@ -1025,7 +1179,8 @@
             });
             // 今日ボタン。
             document.getElementById("moveToToday").addEventListener("click", (e) => {
-                this.controller.dateChanged(Utility.getTodayAsYMD(0, true));
+                e.preventDefault(); // inputが走っちゃって画面遷移が起こる他、URL末尾に?date=が追加されてしまうのを防ぐ。
+                this.controller.dateChanged(Utility.getTodayAsYMD(0, true), false, true);
             });
 
             // 昨日明日ボタン
@@ -1223,7 +1378,7 @@
 
             // 画面切り替えを呼ぶと、timelineがリフレッシュされる
             this.controller.addEventListener(Controller.CONST.REFRESH_TIMELINE, (event) =>{
-                this.controller.switchGroup(this.model.currentGroup);
+                this.controller.switchGroup(this.model.currentGroup, false);
             });
 
             // 取得したイベントの描画
@@ -1324,6 +1479,37 @@
             });
             this.model.addEventListener(Model.CONST.TOAST, (event) => {
                 this.showToast(event.text);
+            });
+
+            this.model.addEventListener(Model.CONST.SET_NAME_FETCH_RESULTS, (event) => {
+                const results  = event.results;
+                const ele = document.getElementById("name_fetch_container");
+                while(ele.lastChild){
+                    ele.removeChild(ele.lastChild)
+                }
+                for(let result of results){
+                    const row = document.createElement("div");
+                    row.classList.add("row");
+                    const start = String(result["start"]);
+                    const groupName = result["groupName"];
+                    if(!/^\d{12}$/.test(start) || typeof groupName !== "string"){
+                        continue;
+                    }
+                    row.appendChild(document.createTextNode(Utility.ymdhmForHuman(start).slice(0, -3)));
+                    row.appendChild(document.createElement("br"));
+                    row.appendChild(document.createTextNode(groupName));
+                    row.appendChild(document.createElement("br"));
+                    row.appendChild(document.createTextNode(String(result["row"])));
+                    row.addEventListener("click", () => {
+                        const ymd = start.slice(0, 4) + "-" + start.slice(4, 6) + "-" + start.slice(6, 8);
+                        // 日付更新では一覧を読み込まず、その後ページを切り替えたタイミングで一度だけ取得する。
+                        this.controller.dateChanged(ymd, true);
+                        this.controller.switchGroup(groupName, false);
+                        this.controller.updateUrlParameters(true, true);
+                        this.model.setLastOpenedGroup(groupName);
+                    });
+                    ele.appendChild(row);
+                }
             });
         }
 
@@ -1434,10 +1620,14 @@
 
         openRows(rowsNum, isOpen){
             let rows = document.getElementsByClassName("timeline_rows")[rowsNum];
+            const eleDate = rows.firstChild.firstChild.firstChild;
             if(isOpen){
-                rows.firstChild.firstChild.classList.add("timeline_label_close");
+                rows.getElementsByClassName("timeline_label")[0].classList.add("timeline_label_close");
+                eleDate.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true);
+                eleDate.classList.remove("hide");
             }else{
-                rows.firstChild.firstChild.classList.remove("timeline_label_close");
+                rows.getElementsByClassName("timeline_label")[0].classList.remove("timeline_label_close");
+                eleDate.classList.add("hide");
             }
             for (let i = 1; i < rows.children.length; i++){
                 let row = rows.children[i];
@@ -1529,32 +1719,34 @@
                     const ele = document.createElement("div");
                     // 2行目からは同一の部屋の翌日以降のタイムライン
                     if(i == 0){
-                        ele.innerHTML = name;
+                        const eleDate = document.createElement("div");
+                        const eleName = document.createElement("div");
+                        ele.appendChild(eleDate);
+                        ele.appendChild(eleName);
+                        eleName.innerHTML = name;
                         // 説明文を無理やり取得
                         const explain = this.model.rowsExplain[this.model.rowsNameWoHtml.indexOf(name)];
                         ele.title = name + ": " + explain;
                         ele.classList.add("timeline_label");
-                        this.model.isRowsOpened.push(false);
+                        //this.model.isRowsOpened.push(false);  //FIXME この処理何？これのせいでswitchGroupの途中でisRowsOpenedの中身が変わってしまう不具合があったため、コメントアウト。
                         ele.addEventListener("click", (event) => {
-                            let rows = event.currentTarget.parentElement.parentElement;
+                            let rows = ele.parentElement.parentElement;
                             let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(rows);
                             this.controller.openRows(rowNums, !this.model.isRowsOpened[rowNums]);
-                            if(this.model.isRowsOpened[rowNums]){
-                                event.currentTarget.innerHTML = Utility.date2ymd(this.model.currentDate, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.dateToDayOfWeek(this.model.currentDate, true) + "<br>" + name;
-                            }else{
-                                event.currentTarget.innerHTML = name;
-                            }
                         });
                         this.model.addEventListener(Model.CONST.DATE_CHANGED, (event) => {
                             let rowNums = [].slice.call(document.getElementsByClassName("timeline_rows")).indexOf(timeline_rows);
                             if(this.model.isRowsOpened[rowNums]){
-                                ele.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, 0, true) + "<br>" + name;
+                                eleDate.innerHTML = Utility.addOffsetToYmd(event.ymd, 0, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(event.ymd, 0, true);
+                                eleDate.classList.remove("hide");
                             }else{
-                                ele.innerHTML = name;
+                                eleDate.classList.add("hide");
                             }
                         });
                     }else{
-                        ele.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);                    
+                        const eleDate = document.createElement("div");
+                        ele.appendChild(eleDate);
+                        eleDate.innerText = Utility.addOffsetToYmd(Utility.date2ymd(this.model.currentDate), i, true).replaceAll(/^\d+?\-/g, "").replace("-", "/") + " " + Utility.addOffsetToYmdAsDOW(Utility.date2ymd(this.model.currentDate), i, true);                    
                         const dow = Utility.ymd2DowNum(Utility.date2ymd(this.model.currentDate), i);
                         if(dow == 0){  // 日
                             ele.classList.add("sunday");
