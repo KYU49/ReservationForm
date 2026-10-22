@@ -733,16 +733,40 @@
                 this.dispatchEvent({type: Controller.CONST.REND_RIGHT_PANE, rightPane: event.rightPane});
                 this.dispatchEvent({type: Controller.CONST.REND_LEFT_PANE, leftPane: event.leftPane});
 
+                const query = new URLSearchParams(window.location.search);
+                const requestedPage = query.get("page");
+                const availableGroups = this.model.leftPane.flatMap((building) =>
+                    (building.arr || [])
+                        .filter((group) => Array.isArray(group.arr))
+                        .map((group) => ({building, group}))
+                );
+                const hierarchicalMatches = availableGroups.filter(({building, group}) =>
+                    group.key === requestedPage || `${building.name}/${group.name}` === requestedPage
+                );
+                const nameMatches = availableGroups.filter(({group}) => group.name === requestedPage);
+                const requestedGroup = hierarchicalMatches.length === 1
+                    ? hierarchicalMatches[0].group
+                    : nameMatches.length === 1 ? nameMatches[0].group : null;
                 const lastOpenedGroup = this.model.getLastOpenedGroup();
-                if(lastOpenedGroup){
+                if(requestedGroup){
+                    this.model.currentGroup = requestedGroup.key;
+                }else if(lastOpenedGroup){
                     this.model.currentGroup = lastOpenedGroup;
                 }else{
                     this.model.currentGroup = this.model.leftPane[0]?.arr[0]?.key;
                 }
 
-                this.dateChanged(Utility.getTodayAsYMD(0, true), true); // todayを読み込むと、timelineは自動取得
+                const requestedYmd = query.get("ymd");
+                const requestedDate = requestedYmd && /^\d{8}$/.test(requestedYmd)
+                    ? `${requestedYmd.slice(0, 4)}-${requestedYmd.slice(4, 6)}-${requestedYmd.slice(6, 8)}`
+                    : "";
+                const parsedRequestedDate = requestedDate ? new Date(`${requestedDate}T00:00:00`) : null;
+                const isValidRequestedDate = parsedRequestedDate &&
+                    !Number.isNaN(parsedRequestedDate.getTime()) &&
+                    Utility.date2ymd(parsedRequestedDate) === requestedYmd;
+                this.dateChanged(isValidRequestedDate ? requestedDate : Utility.getTodayAsYMD(0, true), true);
 
-                this.switchGroup(this.model.currentGroup);
+                this.switchGroup(this.model.currentGroup, false);
 
                 this.model.setReservationDate(new Date(), new Date());
                 // hとmを分ける処理を介してmodelに送る
@@ -808,8 +832,35 @@
             }
         }
         // 日付の変更を呼び出し、今日の日付を設定。initは初期化用
-        dateChanged(value, init = false){
+        dateChanged(value, init = false, resetYmd = false){
             this.model.setCurrentDate(value, init);
+            if(!init){
+                if(resetYmd){
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete("ymd");
+                    window.history.replaceState(window.history.state, "", url);
+                }else{
+                    this.updateUrlParameters(true, false);
+                }
+            }
+        }
+
+        updateUrlParameters(updateYmd = false, updatePage = false){
+            const url = new URL(window.location.href);
+            if(updateYmd){
+                url.searchParams.set("ymd", Utility.date2ymd(this.model.currentDate));
+            }
+
+            if(updatePage){
+                for(const building of this.model.leftPane){
+                    const group = (building.arr || []).find((item) => item.key === this.model.currentGroup && Array.isArray(item.arr));
+                    if(group){
+                        url.searchParams.set("page", `${building.name}/${group.name}`);
+                        break;
+                    }
+                }
+            }
+            window.history.replaceState(window.history.state, "", url);
         }
         
         // 現在のページを開き直して更新する。
@@ -952,7 +1003,7 @@
         }
 
         // 左ペインクリックや初回起動時(Rowのデータの変更が入る)
-        switchGroup(groupName){
+        switchGroup(groupName, syncUrl = true){
             this.model.rowsName = this.model.getRowsInGroup(groupName);
             this.model.rowsNameWoHtml = this.model.getRowsInGroup(groupName, true);
             this.model.rowsExplain = this.model.getRowsExplainInGroup(groupName);
@@ -961,7 +1012,9 @@
                 this.model.currentEvent.row = this.model.rowsNameWoHtml[0];
             }
             this.model.currentGroup = groupName;
-
+            if(syncUrl){
+                this.updateUrlParameters(false, true);
+            }
             // Groupの選択処理(単に背景色を替えて選択中にするだけ)
             this.model.currentEvent.group = groupName;
             this.dispatchEvent({type: Controller.CONST.GROUP_SELECTED, groupName: groupName});
@@ -1127,7 +1180,7 @@
             // 今日ボタン。
             document.getElementById("moveToToday").addEventListener("click", (e) => {
                 e.preventDefault(); // inputが走っちゃって画面遷移が起こる他、URL末尾に?date=が追加されてしまうのを防ぐ。
-                this.controller.dateChanged(Utility.getTodayAsYMD(0, true));
+                this.controller.dateChanged(Utility.getTodayAsYMD(0, true), false, true);
             });
 
             // 昨日明日ボタン
@@ -1325,7 +1378,7 @@
 
             // 画面切り替えを呼ぶと、timelineがリフレッシュされる
             this.controller.addEventListener(Controller.CONST.REFRESH_TIMELINE, (event) =>{
-                this.controller.switchGroup(this.model.currentGroup);
+                this.controller.switchGroup(this.model.currentGroup, false);
             });
 
             // 取得したイベントの描画
@@ -1436,15 +1489,23 @@
                 }
                 for(let result of results){
                     const row = document.createElement("div");
-                    row.classList.add("row")
-                    const start = result["start"];
+                    row.classList.add("row");
+                    const start = String(result["start"]);
                     const groupName = result["groupName"];
-                    row.innerHTML = Utility.ymdhmForHuman(start).slice(0, -3) + "<br>" + groupName + "<br>" + result["row"]; // ymdhmsになっちゃうから、sの部分":00"を削除
-                    row.addEventListener("click", (event) => {
-                        const ymd = start.substr(0, 4) + "-" +  start.substr(4, 2) + "-" + start.substr(6, 2);
-                        this.controller.dateChanged(ymd);
-                        
-                        this.controller.switchGroup(groupName);
+                    if(!/^\d{12}$/.test(start) || typeof groupName !== "string"){
+                        continue;
+                    }
+                    row.appendChild(document.createTextNode(Utility.ymdhmForHuman(start).slice(0, -3)));
+                    row.appendChild(document.createElement("br"));
+                    row.appendChild(document.createTextNode(groupName));
+                    row.appendChild(document.createElement("br"));
+                    row.appendChild(document.createTextNode(String(result["row"])));
+                    row.addEventListener("click", () => {
+                        const ymd = start.slice(0, 4) + "-" + start.slice(4, 6) + "-" + start.slice(6, 8);
+                        // 日付更新では一覧を読み込まず、その後ページを切り替えたタイミングで一度だけ取得する。
+                        this.controller.dateChanged(ymd, true);
+                        this.controller.switchGroup(groupName, false);
+                        this.controller.updateUrlParameters(true, true);
                         this.model.setLastOpenedGroup(groupName);
                     });
                     ele.appendChild(row);
